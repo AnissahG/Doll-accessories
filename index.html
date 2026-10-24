@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Doll accessories">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -126,6 +126,17 @@ table.pieces th{background:var(--paper-alt);font-size:0.72rem;}
 @media print{.noprint{display:none !important;}}
 
 .cutlayout{width:100%;height:auto;display:block;max-height:900px;}
+/* backup reminder */
+.backup-warn{margin:8px 0 0;padding:6px 10px;border-left:3px solid var(--mustard);background:#fff;font-size:0.78rem;line-height:1.45;color:var(--ink);}
+/* tap-to-zoom pattern page viewer */
+.pagewrap > svg{cursor:zoom-in;}
+.pv{position:fixed;inset:0;z-index:50;background:rgba(44,36,24,.92);display:flex;flex-direction:column;}
+.pv-bar{display:flex;gap:8px;align-items:center;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--panel);border-bottom:1px solid var(--line);}
+.pv-bar .btn{margin:0;min-width:40px;}
+.pv-z{font-size:0.8rem;color:var(--ink-soft);min-width:44px;text-align:center;}
+.pv-scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom);}
+.pv-scroll svg{display:block;height:auto;background:#fff;margin:12px auto;}
+
 .field input.bad{border-color:var(--danger);background:#fff6f3;}
 
 </style>
@@ -143,6 +154,7 @@ table.pieces th{background:var(--paper-alt);font-size:0.72rem;}
       <input type="file" id="knitFileInput" accept=".json,application/json" style="display:none;">
     </div>
     <p class="help" style="margin:6px 0 0;">Everything is stored in this browser only. Download a backup after adding dolls or patterns — it is your safety net. "Restore" also accepts a Doll sew or Doll knit backup (it imports the dolls only).</p>
+    <p id="backupNote" class="help"></p>
   </div>
   <div class="tabs">
     <button class="tab active" data-tab="dolls">Dolls</button>
@@ -2467,7 +2479,8 @@ function buildBag(m, o, S, out) {
     plan.casingH = casingH;
   }
   // ---------- facing pieces (and the shorter lining that goes with them)
-  const hf = Math.max(0.7, H * 0.2);
+  // never deeper than ~1/3 of the bag, or the lining of a tiny bag collapses to nothing
+  const hf = Math.min(Math.max(0.7, H * 0.2), H * 0.35);
   if (o.topFinish === 'facing' && !zipAround && o.bodyCon !== 'barrel') {
     if (topRunFront) {
       const fr = facingFrom(topRunFront, hf);
@@ -4382,7 +4395,7 @@ function sget(k, fb) { try { const r = localStorage.getItem(PREFIX + k); return 
 function sset(k, v) { try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); return true; } catch (e) { toast('Could not save — browser storage is full or blocked.'); return false; } }
 const DB = { dolls: [], saved: [], collections: [], settings: {} };
 function loadDB() { DB.dolls = sget('dolls', []); DB.saved = sget('saved', []); DB.collections = sget('collections', []); DB.settings = sget('settings', {}); }
-function saveDB(k) { return sset(k, DB[k]); }
+function saveDB(k) { const ok = sset(k, DB[k]); if (ok) { sset('lastChange', Date.now()); backupStatus(); } return ok; }
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const uid = (p) => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -4600,7 +4613,7 @@ function renderBuilder() {
     $('#btnGenerate').onclick = generateFromBuilder;
     $('#btnResetBuild').onclick = () => { if (!confirm('Reset all options for this accessory?')) return; BUILD.opts = normalizeOptions({ item: BUILD.opts.item, doll: BUILD.opts.doll }); BUILD.editingSavedId = null; renderBuilder(); };
   }
-  $('#buildBanner').innerHTML = BUILD.editingSavedId ? `<div class="note">Duplicate & tweak: you are editing a copy of <b>${h((DB.saved.find(s => s.id === BUILD.editingSavedId) || {}).label || '')}</b>. Saving creates a new pattern.</div>` : '';
+  $('#buildBanner').innerHTML = BUILD.editingSavedId ? `<div class="note">Duplicate & tweak: you are editing a copy of <b>${h((DB.saved.find(s => s.id === BUILD.editingSavedId) || {}).label || '')}</b>. Save it as a new pattern, or tap “Update” under the result to replace the original.</div>` : '';
   renderDrawers($('#buildDrawers'), BUILD.opts, BUILD.open, (id, val) => {
     BUILD.opts = changeOption(BUILD.opts, id, val);
     sset('lastOptions', BUILD.opts);
@@ -4626,7 +4639,18 @@ function generateFromBuilder() {
   if (!d) { toast('Add a doll first (Dolls tab).'); showTab('dolls'); return; }
   const r = buildGarment(d, BUILD.opts);
   BUILD.result = { res: r, doll: d, opts: JSON.parse(JSON.stringify(BUILD.opts)) };
-  renderOutput($('#buildOutput'), BUILD.result, { mode: 'build' });
+  // Duplicate & tweak: also offer to overwrite the pattern the copy came from
+  const orig = BUILD.editingSavedId ? DB.saved.find(s => s.id === BUILD.editingSavedId) : null;
+  const opt = { mode: 'build' };
+  if (orig) {
+    opt.extraButtons = `<button class="btn secondary" data-x="updorig">Update “${h(orig.label)}”</button>`;
+    opt.wire = (el) => { const b = $('[data-x="updorig"]', el); if (b) b.onclick = () => {
+      if (!confirm('Replace the saved pattern "' + orig.label + '" with this version? Its name, notes and collections are kept.')) return;
+      orig.opts = JSON.parse(JSON.stringify(BUILD.result.opts)); orig.dollId = d.id; orig.dollName = d.name; orig.dollSnap = JSON.parse(JSON.stringify(d)); orig.ts = Date.now();
+      saveDB('saved'); BUILD.result.savedId = orig.id; toast('"' + orig.label + '" updated.');
+    }; };
+  }
+  renderOutput($('#buildOutput'), BUILD.result, opt);
   $('#buildOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -4667,7 +4691,7 @@ function renderOutput(el, ctx, opt = {}) {
       <h4>Technical flat</h4><div class="flatbox">${flat}</div>
       ${notionsHTML}
       <h4>Pieces</h4><table class="pieces"><tr><th>#</th><th>Piece</th><th>Cut</th><th>Size / notes</th></tr>${piecesRows}</table>
-      <h4>Pattern pages <span class="hint" style="font-family:var(--sans)">(true scale — print at 100%)</span></h4>
+      <h4>Pattern pages <span class="hint" style="font-family:var(--sans)">(true scale — print at 100% · tap a page to zoom)</span></h4>
       <div class="btn-row noprint" style="margin-bottom:10px;"><button class="btn small" data-x="print">Print / save PDF</button><button class="btn small secondary" data-x="svgall">Download SVG (all pages)</button><button class="btn small secondary" data-x="pngall">Download PNG (all pages, 300 dpi)</button></div>
       <div class="pages">${pagesSVG.map((s, i) => `<div class="pagewrap"><div class="ptools"><span>Page ${i + 1} of ${pagesSVG.length}</span><span class="btn-row" style="margin:0;"><button class="btn small secondary" data-page-svg="${i}">SVG</button><button class="btn small secondary" data-page-png="${i}">PNG</button></span></div>${s}</div>`).join('')}</div>
       <h4>Cutting layout & fabric needed</h4><div id="cutBox"></div>
@@ -5044,7 +5068,8 @@ function doGrade() {
 function backupAll() {
   const payload = { app: 'doll-acc-studio', version: 1, exportedAt: new Date().toISOString(), dolls: DB.dolls, saved: DB.saved, collections: DB.collections, settings: DB.settings, lastOptions: sget('lastOptions', null) };
   download('doll-accessories-backup-' + new Date().toISOString().slice(0, 10) + '.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-  toast('Backup downloaded.');
+  sset('lastBackup', Date.now()); backupStatus();
+  toast(DB.dolls.length || DB.saved.length ? 'Backup downloaded.' : 'Backup downloaded — but the app is empty, so it contains no dolls or patterns.');
 }
 // Dolls from a Doll sew, Doll knit (or another Doll accessories) backup: same measurement keys.
 // Existing dolls (same id or name) are updated; measurements only stored here are kept.
@@ -5083,6 +5108,7 @@ async function restoreFromFile(file) {
   if (data.lastOptions) sset('lastOptions', data.lastOptions);
   BUILD.opts = null; initBuild(); $('#panel-builder').dataset.ready = ''; $('#panel-builder').innerHTML = '';
   renderDollsPanel(); renderBuilder(); renderSaved();
+  sset('lastBackup', Date.now() + 1); backupStatus(); // what is in the app now is exactly that backup
   alert('Restored: ' + DB.dolls.length + ' doll(s), ' + DB.saved.length + ' saved pattern(s), ' + DB.collections.length + ' collection(s).');
 }
 async function importKnitFromFile(file) {
@@ -5095,9 +5121,52 @@ async function importKnitFromFile(file) {
   alert('Imported: ' + r.added + ' new doll(s), ' + r.updated + ' updated. Add the head (over the wig), hand and feet measurements in the Dolls tab for hats, bag handles and shoes.');
 }
 
+// ===================== DATA SAFETY =====================
+// Everything lives in this browser's storage, so nudge for a backup whenever something changed since the last one.
+function backupStatus() {
+  const el = $('#backupNote'); if (!el) return;
+  const has = DB.dolls.length || DB.saved.length;
+  const last = sget('lastBackup', 0), chg = sget('lastChange', 0);
+  if (!has || (last && chg <= last)) { el.className = 'help'; el.textContent = has && last ? 'Last backup: ' + new Date(last).toLocaleDateString() + ' ✓' : ''; return; }
+  el.className = 'backup-warn';
+  el.innerHTML = (last ? 'You have changes since your last backup (' + h(new Date(last).toLocaleDateString()) + ').' : 'You have not downloaded a backup yet.') + ' Tap <b>⬇ Backup all data</b>: clearing browser data, reinstalling the app or changing phone wipes everything.';
+}
+function askPersistentStorage() {
+  // installed apps usually get this automatically; it stops the browser evicting the data when space runs low
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {}); } catch (e) { }
+}
+
+// ===================== PAGE VIEWER (tap a pattern page to zoom) =====================
+let pvZoom = 2.5;
+function openPageViewer(svgEl) {
+  closePageViewer(true);
+  const ov = document.createElement('div'); ov.className = 'pv'; ov.id = 'pageViewer';
+  ov.innerHTML = `<div class="pv-bar"><button class="btn small secondary" data-pv="out" aria-label="Zoom out">−</button><span class="pv-z"></span><button class="btn small secondary" data-pv="in" aria-label="Zoom in">+</button><span style="flex:1"></span><button class="btn small" data-pv="close">Close</button></div><div class="pv-scroll"></div>`;
+  const sc = $('.pv-scroll', ov);
+  const svg = svgEl.cloneNode(true); svg.removeAttribute('width'); svg.removeAttribute('height'); sc.appendChild(svg);
+  const apply = () => { svg.style.width = Math.round(pvZoom * 100) + '%'; $('.pv-z', ov).textContent = Math.round(pvZoom * 100) + '%'; };
+  const zoomBy = (f) => {
+    const cx = (sc.scrollLeft + sc.clientWidth / 2) / sc.scrollWidth, cy = (sc.scrollTop + sc.clientHeight / 2) / sc.scrollHeight;
+    pvZoom = Math.min(8, Math.max(1, pvZoom * f)); apply();
+    sc.scrollLeft = cx * sc.scrollWidth - sc.clientWidth / 2; sc.scrollTop = cy * sc.scrollHeight - sc.clientHeight / 2;
+  };
+  ov.onclick = (e) => { const a = e.target.closest('[data-pv]'); if (!a) return; if (a.dataset.pv === 'close') closePageViewer(); else zoomBy(a.dataset.pv === 'in' ? 1.4 : 1 / 1.4); };
+  document.body.appendChild(ov); document.body.style.overflow = 'hidden'; apply();
+  try { history.pushState({ pageViewer: 1 }, ''); } catch (e) { } // so the phone's back button closes the viewer
+}
+function closePageViewer(silent) {
+  const ov = $('#pageViewer'); if (!ov) return;
+  ov.remove(); document.body.style.overflow = '';
+  if (!silent && history.state && history.state.pageViewer) history.back();
+}
+window.addEventListener('popstate', () => closePageViewer(true));
+document.addEventListener('click', (e) => { const svg = e.target.closest('.pagewrap > svg'); if (svg && !e.target.closest('#pageViewer')) openPageViewer(svg); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePageViewer(); });
+
 // ===================== INIT =====================
 function init() {
   loadDB();
+  backupStatus(); askPersistentStorage();
   $$('.tab').forEach(t => t.onclick = () => showTab(t.dataset.tab));
   $('#btnBackup').onclick = backupAll;
   $('#btnRestore').onclick = () => $('#restoreFileInput').click();
