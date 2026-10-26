@@ -1,6 +1,6 @@
 // Doll accessories Pattern Studio — offline cache
 const PREFIX = 'doll-acc-';
-const CACHE = PREFIX + 'v2';
+const CACHE = PREFIX + 'v3';
 const FONT_CACHE = PREFIX + 'fonts';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
