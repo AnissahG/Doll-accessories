@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doll accessories Pattern Studio</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7B2D3A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doll accessories">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <h1>Doll accessories Pattern Studio</h1>
+    <p>Bags, sewn hats, belts &amp; harnesses, neckwear, hair accessories and flat shoes — drafted at true scale from your doll's measurements, with hardware sizes, construction steps, remixing and grading.</p>
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="btn small secondary sync-pill" id="btnSync" title="Sync between devices"><span id="syncStatus">Sync</span></button>
+      <button class="btn small secondary" id="btnBackup">⬇ Backup all data</button>
+      <button class="btn small secondary" id="btnRestore">⬆ Restore from backup</button>
+      <button class="btn small secondary" id="btnImportKnit">⇄ Import dolls from Doll sew / Doll knit</button>
+      <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
+      <input type="file" id="knitFileInput" accept=".json,application/json" style="display:none;">
+    </div>
+    <p class="help" style="margin:6px 0 0;">Everything is stored on this device. Turn on <b>☁ Sync</b> to share your dolls and patterns with your phone, tablet and laptop, and download a backup now and then — it is your safety net. "Restore" also accepts a Doll sew or Doll knit backup (it imports the dolls only).</p>
+    <p id="backupNote" class="help"></p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="dolls">Dolls</button>
+    <button class="tab" data-tab="builder">Build</button>
+    <button class="tab" data-tab="saved">Saved</button>
+    <button class="tab" data-tab="remix">Remix</button>
+    <button class="tab" data-tab="grade">Grade</button>
+  </div>
+  <div class="panel active" id="panel-dolls"></div>
+  <div class="panel" id="panel-builder"></div>
+  <div class="panel" id="panel-saved"></div>
+  <div class="panel" id="panel-remix"></div>
+  <div class="panel" id="panel-grade"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/*__JS__*/
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>

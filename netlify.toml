@@ -1,0 +1,4 @@
+# The web (PWA) version: Netlify publishes the built app in dist/ as it is (no build step).
+[build]
+  publish = "dist"
+  command = ""

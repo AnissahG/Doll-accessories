@@ -1,0 +1,16 @@
+{
+  "appId": "com.dollheimr.accessoriesstudio",
+  "appName": "Doll accessories",
+  "webDir": "dist",
+  "backgroundColor": "#F7C6CB",
+  "android": {
+    "backgroundColor": "#F7C6CB"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DEFAULT",
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}

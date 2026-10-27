@@ -12,8 +12,6 @@
 <meta name="apple-mobile-web-app-title" content="Doll accessories">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#EBE3CF; --paper-alt:#E1D6BB; --panel:#F6F1E4;
@@ -139,6 +137,35 @@ table.pieces th{background:var(--paper-alt);font-size:0.72rem;}
 
 .field input.bad{border-color:var(--danger);background:#fff6f3;}
 
+/* ---- fonts bundled with the app (work offline, in the APK too) ---- */
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/fraunces-400.woff2) format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/fraunces-500.woff2) format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/fraunces-600.woff2) format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/fraunces-700.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/inter-400.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/inter-500.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/inter-600.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/inter-700.woff2) format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/jetbrains-mono-400.woff2) format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/jetbrains-mono-500.woff2) format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/jetbrains-mono-600.woff2) format('woff2');}
+/* ---- APK: keep clear of the status bar / gesture bar ---- */
+html.native .app{padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(80px + env(safe-area-inset-bottom,0px));}
+/* ---- sync between devices ---- */
+.sync-pill{display:inline-flex;align-items:center;gap:6px;}
+.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b3a88f;}
+.sync-dot.on{background:var(--sage);}
+.sync-dot.bad{background:var(--danger);}
+.sync-sheet{position:fixed;inset:0;z-index:60;background:rgba(44,36,24,.45);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 12px 24px;}
+.sync-card{background:var(--panel);border:1px solid var(--line);max-width:520px;width:100%;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.sync-head{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:10px;}
+.sync-head h3{font-size:1.05rem;margin:0;}
+.sync-card .help{margin:0 0 8px;}
+.sy-field{display:block;font-size:0.72rem;color:var(--ink-soft);font-weight:600;margin-bottom:8px;}
+.sy-field input{display:block;width:100%;margin-top:3px;padding:8px 9px;border:1px solid var(--line);background:#fff;font-family:var(--sans);font-size:0.9rem;color:var(--ink);}
+.sy-err{font-size:0.78rem;color:var(--danger);border-left:3px solid var(--danger);padding:4px 8px;margin:6px 0;}
+.sy-sql{white-space:pre-wrap;font-family:var(--mono);font-size:10.5px;max-height:45vh;overflow:auto;background:#fff;border:1px solid var(--line);padding:8px;margin:0 0 6px;user-select:text;-webkit-user-select:text;}
+
 </style>
 </head>
 <body>
@@ -147,13 +174,14 @@ table.pieces th{background:var(--paper-alt);font-size:0.72rem;}
     <h1>Doll accessories Pattern Studio</h1>
     <p>Bags, sewn hats, belts &amp; harnesses, neckwear, hair accessories and flat shoes — drafted at true scale from your doll's measurements, with hardware sizes, construction steps, remixing and grading.</p>
     <div class="btn-row" style="margin-top:10px;">
+      <button class="btn small secondary sync-pill" id="btnSync" title="Sync between devices"><span id="syncStatus">Sync</span></button>
       <button class="btn small secondary" id="btnBackup">⬇ Backup all data</button>
       <button class="btn small secondary" id="btnRestore">⬆ Restore from backup</button>
       <button class="btn small secondary" id="btnImportKnit">⇄ Import dolls from Doll sew / Doll knit</button>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
       <input type="file" id="knitFileInput" accept=".json,application/json" style="display:none;">
     </div>
-    <p class="help" style="margin:6px 0 0;">Everything is stored in this browser only. Download a backup after adding dolls or patterns — it is your safety net. "Restore" also accepts a Doll sew or Doll knit backup (it imports the dolls only).</p>
+    <p class="help" style="margin:6px 0 0;">Everything is stored on this device. Turn on <b>☁ Sync</b> to share your dolls and patterns with your phone, tablet and laptop, and download a backup now and then — it is your safety net. "Restore" also accepts a Doll sew or Doll knit backup (it imports the dolls only).</p>
     <p id="backupNote" class="help"></p>
   </div>
   <div class="tabs">
@@ -1744,7 +1772,7 @@ function addNotion(out, key, label, qty, note) {
 // ===================== CATALOGUE, OPTIONS, PRESETS =====================
 const CATS = [
   ['bag', 'Bags'], ['hat', 'Sewn hats & headwear'], ['belt', 'Belts & harnesses'], ['neck', 'Neckwear'],
-  ['hair', 'Hair accessories'], ['styling', 'Other styling'], ['shoe', 'Shoes (beta)'], ['collar', 'Collars & cuffs']
+  ['hair', 'Hair accessories'], ['styling', 'Other styling'], ['shoe', 'Shoes (beta)'], ['collar', 'Collars & cuffs'], ['apron', 'Aprons'], ['leg', 'Leg & boot']
 ];
 // [id, label, category]
 const ITEMS = [
@@ -1765,7 +1793,9 @@ const ITEMS = [
   ['suspenders', 'Suspenders', 'styling'], ['garters', 'Garters', 'styling'], ['sash', 'Sash', 'styling'],
   ['slippers', 'Fabric slippers', 'shoe'], ['flats', 'Ballet flats', 'shoe'], ['maryjanes', 'Mary Janes', 'shoe'], ['sandals', 'Simple sandals', 'shoe'], ['espadrilles', 'Espadrilles', 'shoe'],
   ['flatcollar', 'Flat collar (Peter Pan, Bertha…)', 'collar'], ['sailorcollar', 'Sailor collar', 'collar'], ['rufflecollar', 'Ruffle collar', 'collar'],
-  ['shirtcollar', 'False shirt collar', 'collar'], ['dickey', 'Dickey / false shirt front', 'collar'], ['cuffs', 'Detachable cuffs', 'collar']
+  ['shirtcollar', 'False shirt collar', 'collar'], ['dickey', 'Dickey / false shirt front', 'collar'], ['cuffs', 'Detachable cuffs', 'collar'],
+  ['halfapron', 'Half / waist apron', 'apron'], ['bibapron', 'Bib apron', 'apron'], ['maidapron', 'Maid / lolita apron', 'apron'], ['pinafore', 'Pinafore (cross-back) apron', 'apron'], ['tabard', 'Tabard', 'apron'],
+  ['bootcovers', 'Boot covers', 'leg'], ['spats', 'Spats / gaiters', 'leg'], ['bootcuffs', 'Boot cuffs / toppers', 'leg'], ['anklecuffs', 'Ankle cuffs', 'leg']
 ];
 const itemCat = (id) => { const x = ITEMS.find(i => i[0] === id); return x ? x[2] : 'bag'; };
 const itemLabel = (id) => { const x = ITEMS.find(i => i[0] === id); return x ? x[1] : id; };
@@ -1779,6 +1809,28 @@ const BAG_REF = {
 const BAG_SIZE_K = { tiny: 0.55, small: 0.75, medium: 1, large: 1.25, oversized: 1.55 };
 
 const ACH = {
+  legFabric: [['woven', 'woven'], ['stretch', 'stretch knit'], ['faux leather', 'faux leather / felt (raw edges)']],
+  legOver: [['bare foot / socks', 'bare foot or socks'], ['over shoes', 'over shoes']],
+  bootLen: [['ankle boot', 'ankle boot'], ['mid-calf', 'mid-calf'], ['knee-high', 'knee-high'], ['over-the-knee', 'over-the-knee'], ['thigh-high', 'thigh-high']],
+  bootClose: [['hook & loop', 'hook & loop down the back'], ['zip', 'zip down the back'], ['lacing', 'lacing down the back'], ['buttons', 'buttons down the back'], ['none', 'none (stretch only)']],
+  bootTop: [['hem', 'plain hem'], ['fold-down cuff', 'fold-down cuff'], ['faux-fur trim', 'faux-fur trim']],
+  spatLen: [['ankle', 'spats (ankle)'], ['mid-calf', 'mid-calf gaiters'], ['knee', 'knee gaiters']],
+  spatClose: [['buttons', 'buttons'], ['snaps', 'snaps'], ['hook & loop', 'hook & loop'], ['lacing', 'lacing']],
+  cuffPos: [['ankle boot', 'ankle boots'], ['mid-calf', 'mid-calf boots'], ['knee-high', 'knee boots']],
+  bootCuffStyle: [['fold-over', 'fold-over band'], ['cable knit', 'cable-knit look'], ['ruffle', 'ruffle'], ['lace ruffle', 'lace ruffle'], ['faux fur', 'faux fur']],
+  ankleCuffStyle: [['ruffle', 'ruffle'], ['double ruffle', 'double ruffle'], ['lace ruffle', 'lace ruffle'], ['lace', 'band with lace']],
+  ankleClose: [['snap', 'snap'], ['ribbon tie', 'ribbon tie'], ['elastic', 'elastic (pull-on)']],
+  apronLen: [['short', 'short (mid-thigh)'], ['knee', 'knee'], ['midi', 'midi'], ['long', 'long (ankle)']],
+  apronShape: [['rectangle', 'straight'], ['rounded', 'rounded corners'], ['curved', 'curved (half-moon)'], ['scalloped', 'scalloped hem']],
+  apronFull: [['flat', 'flat'], ['gathered', 'gathered (1.6×)'], ['full', 'full (2×)'], ['pleated', 'pleated']],
+  apronHem: [['plain', 'plain hem'], ['lace', 'lace edge'], ['ruffle', 'ruffle'], ['double ruffle', 'double ruffle']],
+  apronPockets: [['none', 'none'], ['one', 'one'], ['two', 'two'], ['heart', 'heart pockets']],
+  bibShape: [['rectangle', 'straight'], ['rounded', 'rounded'], ['heart', 'heart'], ['scalloped', 'scalloped top']],
+  apronStraps: [['neck loop', 'neck loop (halter)'], ['cross-back', 'straps crossing at the back'], ['button-on', 'crossed straps, buttoned on']],
+  bowSize: [['normal', 'normal'], ['big', 'big bow']],
+  tabardTie: [['side ties', 'side ties'], ['belt', 'belt'], ['open', 'open sides']],
+  tabardNeck: [['round', 'round'], ['V', 'V-neck'], ['square', 'square']],
+  tabardHem: [['straight', 'straight'], ['rounded', 'rounded'], ['pointed', 'pointed']],
   collarShape: [['round', 'round (Peter Pan)'], ['pointed', 'pointed'], ['scalloped', 'scalloped'], ['Bertha', 'Bertha (wide, over the shoulders)']],
   collarEdge: [['plain', 'plain'], ['lace edging', 'lace edging'], ['ruffle edge', 'ruffle edge'], ['piping', 'piping'], ['all lace', 'all lace (single layer)']],
   collarFasten: [['bias ties', 'bias binding that runs on into ties'], ['ribbon ties', 'ribbon ties'], ['neckband + snap', 'neckband with a snap']],
@@ -1868,6 +1920,8 @@ const ACC_DEFAULTS = {
   cat: 'bag', item: 'tote', style: '', name: '', doll: '',
   sa: '0.5', saCm: '', hemSa: '1', hemSaCm: '', paper: 'A4', packPages: true, fabricWidth: '110', fabricWidthCm: '',
   styleTags: [], season: [], occasion: [],
+  legFabric: 'woven', legOver: 'over shoes', legLined: false, bootLen: 'knee-high', bootClose: 'hook & loop', bootTop: 'hem', spatLen: 'ankle', spatClose: 'buttons', cuffPos: 'mid-calf', bootCuffStyle: 'fold-over', cuffBandH: '', ankleCuffStyle: 'ruffle', ankleClose: 'snap', ankleBow: false,
+  apronLen: 'knee', apronShape: 'rectangle', apronFull: 'gathered', apronHem: 'plain', apronLace: false, apronPockets: 'two', bibShape: 'rectangle', apronStraps: 'neck loop', frillStraps: false, bowSize: 'normal', tabardTie: 'side ties', tabardNeck: 'round', tabardHem: 'straight',
   collarShape: 'round', collarW: '', collarEdge: 'plain', collarFasten: 'bias ties', sailorStripes: '2', sailorBow: true, ruffleTiers: '1', ruffleFull: 'medium', shirtPoint: 'classic', dickeyFront: 'mock placket', dickeyCollar: 'shirt collar', cuffStyle: 'band', cuffH: '', cuffClose: 'snap',
   construction: 'turned', lining: 'yes', interfacing: 'fusible',
   // bags
@@ -1941,10 +1995,26 @@ const ITEM_DEFAULTS = {
   suspenders: { suspStyle: 'Y', suspEnds: 'buttons', beltMake: 'folded' }, garters: { garterStyle: 'ruffled', thighPos: 'mid thigh' }, sash: { sashStyle: 'waist' },
   slippers: { soleMake: 'card', shoeLining: true }, flats: { soleMake: 'card', shoeLining: true }, maryjanes: { soleMake: 'card', shoeClosure: 'snap', shoeLining: true },
   sandals: { soleMake: 'card', sandalStyle: 'ankle', shoeClosure: 'buckle', shoeLining: false }, espadrilles: { soleMake: 'cord', shoeLining: false },
-  flatcollar: { interfacing: 'none' }, sailorcollar: { interfacing: 'none' }, rufflecollar: { interfacing: 'none' }, shirtcollar: { interfacing: 'fusible' }, dickey: { interfacing: 'none' }, cuffs: { interfacing: 'fusible' }
+  flatcollar: { interfacing: 'none' }, sailorcollar: { interfacing: 'none' }, rufflecollar: { interfacing: 'none' }, shirtcollar: { interfacing: 'fusible' }, dickey: { interfacing: 'none' }, cuffs: { interfacing: 'fusible' },
+  halfapron: {}, bibapron: { interfacing: 'none' }, maidapron: { interfacing: 'none', apronFull: 'full', apronHem: 'ruffle', apronLace: true, bibShape: 'rounded', apronStraps: 'cross-back', frillStraps: true, bowSize: 'big', apronShape: 'rounded', apronPockets: 'none' }, pinafore: { apronFull: 'flat' }, tabard: {},
+  bootcovers: { legOver: 'over shoes' }, spats: { legOver: 'over shoes', legLined: true }, bootcuffs: { legFabric: 'stretch', legOver: 'over shoes' }, anklecuffs: { legFabric: 'woven', legOver: 'bare foot / socks' }
 };
 // Style presets per item — they switch on components you can then change.
 const ACC_STYLES = {
+  bootcovers: { 'knee-high boot covers': {}, 'thigh-high boot covers': { bootLen: 'thigh-high', legFabric: 'stretch', bootClose: 'none' }, 'ankle boot covers': { bootLen: 'ankle boot' },
+    'faux leather lace-up boots': { legFabric: 'faux leather', bootClose: 'lacing', styleTags: ['gothic', 'punk'] }, 'cosplay boot covers': { legFabric: 'stretch', bootClose: 'zip', styleTags: ['fantasy'] },
+    'fur-topped winter boots': { bootLen: 'mid-calf', bootTop: 'faux-fur trim', styleTags: ['cosy'] }, 'slouch boots': { bootLen: 'mid-calf', bootTop: 'fold-down cuff' } },
+  spats: { 'classic spats': {}, 'felt spats': { legFabric: 'faux leather', legLined: false }, 'mid-calf gaiters': { spatLen: 'mid-calf' }, 'lace-up knee gaiters': { spatLen: 'knee', spatClose: 'lacing', styleTags: ['fantasy', 'military'] } },
+  bootcuffs: { 'knit boot cuffs': {}, 'cable-knit boot toppers': { bootCuffStyle: 'cable knit', styleTags: ['cosy'] }, 'lace boot cuffs': { bootCuffStyle: 'lace ruffle', legFabric: 'woven', styleTags: ['romantic'] }, 'faux fur boot cuffs': { bootCuffStyle: 'faux fur', styleTags: ['cosy'] } },
+  anklecuffs: { 'ruffle ankle cuffs': {}, 'lolita ankle cuffs': { ankleCuffStyle: 'double ruffle', ankleBow: true, ankleClose: 'ribbon tie', styleTags: ['cute', 'romantic'] }, 'lace ankle cuffs': { ankleCuffStyle: 'lace ruffle', ankleClose: 'elastic' } },
+  halfapron: { 'gathered half apron': {}, 'café apron': { apronLen: 'short', apronFull: 'flat', apronPockets: 'two', styleTags: ['workwear'] }, 'frilly half apron': { apronShape: 'rounded', apronHem: 'ruffle', apronLace: true, apronPockets: 'none', styleTags: ['cute', 'cottagecore'] },
+    'waitress apron': { apronLen: 'short', apronShape: 'curved', apronHem: 'ruffle', apronPockets: 'one', styleTags: ['retro'] }, 'pleated half apron': { apronFull: 'pleated' }, 'scalloped apron': { apronShape: 'scalloped', apronFull: 'flat', styleTags: ['cute'] } },
+  bibapron: { 'kitchen / chef apron': { apronFull: 'flat', apronPockets: 'two', styleTags: ['workwear'] }, 'cottagecore bib apron': { bibShape: 'rounded', apronStraps: 'cross-back', apronHem: 'lace', styleTags: ['cottagecore'] },
+    'heart bib apron': { bibShape: 'heart', apronPockets: 'heart', apronHem: 'ruffle', styleTags: ['cute', 'kawaii'] }, 'artist / workshop apron': { apronFull: 'flat', apronStraps: 'cross-back', apronPockets: 'two', styleTags: ['utility'] } },
+  maidapron: { 'classic maid apron': {}, 'lolita apron': { bibShape: 'heart', apronHem: 'double ruffle', styleTags: ['cute', 'romantic'] },
+    'Victorian maid apron': { apronLen: 'long', apronShape: 'rectangle', bibShape: 'rectangle', styleTags: ['vintage'] }, 'café maid apron': { apronLen: 'short', bibShape: 'scalloped', styleTags: ['kawaii'] } },
+  pinafore: { 'Japanese cross-back apron': {}, 'long pinafore apron': { apronLen: 'long' }, 'short pinafore': { apronLen: 'short', apronPockets: 'none' } },
+  tabard: { 'simple tabard': {}, 'knight / medieval tabard': { tabardHem: 'pointed', tabardTie: 'belt', styleTags: ['fantasy'] }, 'work tabard': { apronLen: 'short', tabardNeck: 'V', styleTags: ['workwear'] } },
   flatcollar: { 'Peter Pan collar': {}, 'lace-edged Peter Pan': { collarEdge: 'lace edging', styleTags: ['cute', 'romantic'] }, 'pointed collar': { collarShape: 'pointed' }, 'scalloped collar': { collarShape: 'scalloped', styleTags: ['cute'] },
     'Bertha collar': { collarShape: 'Bertha', styleTags: ['vintage'] }, 'lace Bertha': { collarShape: 'Bertha', collarEdge: 'all lace', styleTags: ['vintage', 'romantic'] }, 'ruffle-edged collar': { collarEdge: 'ruffle edge', styleTags: ['cottagecore'] },
     'piped collar': { collarEdge: 'piping', styleTags: ['preppy'] }, 'snap-on collar': { collarFasten: 'neckband + snap' } },
@@ -2006,7 +2076,7 @@ const ACC_STYLES = {
 // ---- visibility helpers
 const AR = {
   bag: (o) => isCat(o, 'bag'), hat: (o) => isCat(o, 'hat'), belt: (o) => isCat(o, 'belt'), neck: (o) => isCat(o, 'neck'),
-  hair: (o) => isCat(o, 'hair'), styling: (o) => isCat(o, 'styling'), shoe: (o) => isCat(o, 'shoe'), collar: (o) => isCat(o, 'collar'),
+  hair: (o) => isCat(o, 'hair'), styling: (o) => isCat(o, 'styling'), shoe: (o) => isCat(o, 'shoe'), collar: (o) => isCat(o, 'collar'), apron: (o) => isCat(o, 'apron'), leg: (o) => isCat(o, 'leg'),
   is: (...ids) => (o) => ids.includes(o.item),
   strapItems: ['belt', 'waistharness', 'chestharness', 'thighharness', 'utilitybelt', 'suspenders'],
   gored: ['cap', 'newsboy', 'bakerboy', 'cloche', 'tulip'],
@@ -2196,6 +2266,40 @@ const ACC_DRAWERS = [
     { id: 'cuffH', label: 'Cuff height (cm)', type: 'number', placeholder: 'auto', show: AR.is('cuffs') },
     { id: 'cuffClose', label: 'Closure', type: 'select', choices: ACH.cuffClose, show: AR.is('cuffs') },
     { id: 'interfacing', label: 'Interfacing', type: 'select', choices: ACH.interfacing.slice(0, 2), show: AR.is('flatcollar', 'shirtcollar', 'cuffs') }
+  ] },
+  // ---------------- aprons
+  { id: 'apronopts', title: 'Apron', show: AR.apron, fields: [
+    { id: 'apronLen', label: 'Length (below the waist)', type: 'select', choices: ACH.apronLen, readout: 'size' },
+    { id: 'apronShape', label: 'Shape', type: 'select', choices: ACH.apronShape, show: AR.is('halfapron', 'bibapron', 'maidapron') },
+    { id: 'apronFull', label: 'Fullness at the waist', type: 'select', choices: ACH.apronFull, show: AR.is('halfapron', 'bibapron', 'maidapron') },
+    { id: 'apronHem', label: 'Sides & hem', type: 'select', choices: ACH.apronHem, show: AR.is('halfapron', 'bibapron', 'maidapron') },
+    { id: 'apronLace', label: 'Lace on the ruffle', type: 'check', show: (o) => AR.is('halfapron', 'bibapron', 'maidapron')(o) && ['ruffle', 'double ruffle'].includes(o.apronHem) },
+    { id: 'apronPockets', label: 'Pockets', type: 'select', choices: (o) => o.item === 'pinafore' ? ACH.apronPockets.filter(c => c[0] !== 'heart') : ACH.apronPockets, show: AR.is('halfapron', 'bibapron', 'maidapron', 'pinafore') },
+    { id: 'bibShape', label: 'Bib shape', type: 'select', choices: ACH.bibShape, show: AR.is('bibapron', 'maidapron') },
+    { id: 'apronStraps', label: 'Straps', type: 'select', choices: ACH.apronStraps, show: AR.is('bibapron', 'maidapron') },
+    { id: 'frillStraps', label: 'Frilled straps (over the shoulders)', type: 'check', show: (o) => ['bibapron', 'maidapron'].includes(o.item) && o.apronStraps !== 'neck loop' },
+    { id: 'bowSize', label: 'Bow at the back', type: 'select', choices: ACH.bowSize, show: AR.is('halfapron', 'bibapron', 'maidapron') },
+    { id: 'tabardNeck', label: 'Neckline', type: 'select', choices: ACH.tabardNeck, show: AR.is('tabard') },
+    { id: 'tabardHem', label: 'Hem', type: 'select', choices: ACH.tabardHem, show: AR.is('tabard') },
+    { id: 'tabardTie', label: 'Sides', type: 'select', choices: ACH.tabardTie, show: AR.is('tabard') },
+    { id: 'interfacing', label: 'Interfacing (bib)', type: 'select', choices: ACH.interfacing.slice(0, 2), show: AR.is('bibapron', 'maidapron') }
+  ] },
+  // ---------------- leg & boot
+  { id: 'legopts', title: 'Leg & boot', show: AR.leg, fields: [
+    { id: 'legFabric', label: 'Fabric', type: 'select', choices: (o) => o.item === 'anklecuffs' ? ACH.legFabric.filter(c => c[0] !== 'faux leather') : ACH.legFabric },
+    { id: 'legOver', label: 'Worn', type: 'select', choices: ACH.legOver, show: AR.is('bootcovers', 'spats', 'bootcuffs'), hint: 'Over shoes adds the shoe\'s bulk and sole to the foot measurements.' },
+    { id: 'bootLen', label: 'Height', type: 'select', choices: ACH.bootLen, show: AR.is('bootcovers'), readout: 'size' },
+    { id: 'spatLen', label: 'Height', type: 'select', choices: ACH.spatLen, show: AR.is('spats'), readout: 'size' },
+    { id: 'bootClose', label: 'Closure', type: 'select', choices: (o) => o.legFabric === 'stretch' ? ACH.bootClose : ACH.bootClose.filter(c => c[0] !== 'none'), show: AR.is('bootcovers') },
+    { id: 'spatClose', label: 'Closure', type: 'select', choices: ACH.spatClose, show: AR.is('spats') },
+    { id: 'bootTop', label: 'Top edge', type: 'select', choices: ACH.bootTop, show: AR.is('bootcovers') },
+    { id: 'legLined', label: 'Lined', type: 'check', show: (o) => ['bootcovers', 'spats'].includes(o.item) && o.legFabric !== 'faux leather' },
+    { id: 'cuffPos', label: 'For boots up to', type: 'select', choices: ACH.cuffPos, show: AR.is('bootcuffs') },
+    { id: 'bootCuffStyle', label: 'Style', type: 'select', choices: ACH.bootCuffStyle, show: AR.is('bootcuffs') },
+    { id: 'ankleCuffStyle', label: 'Style', type: 'select', choices: ACH.ankleCuffStyle, show: AR.is('anklecuffs') },
+    { id: 'ankleClose', label: 'Closure', type: 'select', choices: ACH.ankleClose, show: AR.is('anklecuffs') },
+    { id: 'ankleBow', label: 'Ribbon bow', type: 'check', show: AR.is('anklecuffs') },
+    { id: 'cuffBandH', label: 'Band height (cm)', type: 'number', placeholder: 'auto', show: AR.is('bootcuffs', 'anklecuffs') }
   ] },
   // ---------------- common
   { id: 'finish', title: 'Seam allowance', fields: [
@@ -4249,6 +4353,710 @@ function collarFlat(out, F) {
 }
 
 ;
+// ===================== APRONS =====================
+// Half (waist) apron, bib apron, maid / lolita apron, pinafore (cross-back) apron, tabard.
+// - The apron skirt is a front panel on the fold at CF. Its finished top width covers the front of
+//   the waist (55 %); fullness multiplies the cut width (gathered / pleated); hem shape is square,
+//   rounded, curved or scalloped. A waistband runs on into ties that bow at the back.
+// - The bib is a half piece on the fold at CF (self-lined), hung from a neck loop or shoulder straps
+//   that cross at the back (optionally frilled — the maid look).
+// - Pinafore: an A-line front from chest to hem, two back panels and wide straps crossing at the back.
+// - Tabard: front and back panels joined at the shoulders, neck opening big enough for the head.
+
+function apronLenCm(m, o) {
+  const kA = Math.max(1, m.waistToAnkle - m.waistToKnee);
+  return { short: m.waistToMidThigh, knee: m.waistToKnee, midi: m.waistToKnee + kA * 0.45, long: m.waistToAnkle * 0.97 }[o.apronLen] ?? m.waistToKnee;
+}
+const APRON_FULL = { flat: 1, gathered: 1.6, full: 2, pleated: 1.7 };
+
+// skirt panel, half on the fold at CF: x = 0 at CF, top at y = 0
+function apronSkirt(m, o, out, P, Wt, L, name) {
+  const f = APRON_FULL[o.apronFull] || 1;
+  const hw = Wt / 2 * f;                                     // cut half width
+  const shape = o.apronShape;
+  const ol = new Outline();
+  ol.add([G.P(0, 0), G.P(hw, 0)], 'top');
+  if (shape === 'rounded') {
+    const rr = Math.min(hw, L) * 0.4;
+    ol.add([G.P(hw, 0), G.P(hw, L - rr)], 'side');
+    ol.add(G.bez(G.P(hw, L - rr), G.P(hw, L - rr * 0.45), G.P(hw - rr * 0.45, L), G.P(hw - rr, L), 10), 'hem');
+    ol.add([G.P(hw - rr, L), G.P(0, L)], 'hem');
+  } else if (shape === 'curved') {
+    ol.add([G.P(hw, 0), G.P(hw, L * 0.45)], 'side');
+    ol.add(G.bez(G.P(hw, L * 0.45), G.P(hw, L * 0.85), G.P(hw * 0.55, L), G.P(0, L), 16), 'hem');
+  } else if (shape === 'scalloped') {
+    const n = Math.max(3, Math.round(hw / Math.max(0.8, Wt * 0.12))), sw = hw / n, d = Math.min(sw * 0.4, L * 0.06);
+    ol.add([G.P(hw, 0), G.P(hw, L - d)], 'side');
+    const pts = [];
+    for (let i = n; i > 0; i--) { const x1 = i * sw, x0 = (i - 1) * sw; pts.push(...G.qbez(G.P(x1, L - d), G.P((x0 + x1) / 2, L + d), G.P(x0, L - d), 8)); }
+    ol.add(pts, 'hem');
+  } else {
+    ol.add([G.P(hw, 0), G.P(hw, L)], 'side');
+    ol.add([G.P(hw, L), G.P(0, L)], 'hem');
+  }
+  ol.close('fold');
+  const ruffled = o.apronHem === 'ruffle' || o.apronHem === 'double ruffle';
+  const pc = pieceFromOutline(ol, { name: name || 'Apron skirt', cut: { fabric: 1, fold: true } });
+  pc.foldTag = 'fold'; pc.edges.fold = { kind: 'fold' };
+  pc.edges.top = { kind: 'seam', label: f > 1 ? (o.apronFull === 'pleated' ? 'pleated to fit' : 'gathered to fit') : 'joins the waistband' };
+  pc.edges.side = ruffled ? { kind: 'seam', label: 'ruffle' } : { kind: 'hem', sa: 0.5, label: 'narrow hem' };
+  pc.edges.hem = ruffled ? { kind: 'seam', label: 'ruffle' } : o.apronHem === 'lace' ? { kind: 'hem', sa: 0.3, label: 'narrow hem + lace' } : { kind: 'hem', label: shape === 'curved' || shape === 'rounded' ? 'curved hem' : 'hem' };
+  pc.grain = { a: G.P(Math.min(1, hw * 0.2), L * 0.15), b: G.P(Math.min(1, hw * 0.2), L * 0.8) };
+  if (f > 1 && o.apronFull !== 'pleated') pc.marks.push({ type: 'gather', pts: [G.P(0.1, 0.02), G.P(hw - 0.1, 0.02)], label: '' });
+  if (o.apronFull === 'pleated') {
+    const nP = Math.max(2, Math.round(Wt / 2 / Math.max(0.8, Wt * 0.12))), take = (hw - Wt / 2) / nP;
+    for (let i = 0; i < nP; i++) { const x = (Wt / 2) * (i + 0.5) / nP + take * i; pc.marks.push({ type: 'pleat', a: G.P(x, 0), b: G.P(x, Math.min(L * 0.25, 3)), w: take / 2, dir: 1, label: i ? '' : 'pleat' }); }
+    pc.notes.push(nP + ' knife pleats each side, ' + cm(take / 2) + ' deep, folded toward the sides.');
+  }
+  // pockets: placed where they land once the top is gathered
+  if (o.apronPockets && o.apronPockets !== 'none') {
+    const pw = Math.max(1.2, Wt * 0.24), ph = pw * (o.apronPockets === 'heart' ? 0.95 : 0.85);
+    const n = o.apronPockets === 'one' ? 1 : 2;
+    const xs = n === 1 ? [Wt * 0.22 * f] : [Wt * 0.22 * f];
+    xs.forEach(x => pc.marks.push({ type: 'place', pts: [G.P(x - pw / 2, L * 0.22), G.P(x + pw / 2, L * 0.22), G.P(x + pw / 2, L * 0.22 + ph), G.P(x - pw / 2, L * 0.22 + ph)], label: 'pocket' }));
+    let pk;
+    if (o.apronPockets === 'heart') {
+      const hol = new Outline(), w = pw / 2;
+      hol.add(G.bez(G.P(0, ph), G.P(-w * 1.1, ph * 0.55), G.P(-w * 1.15, -ph * 0.05), G.P(-w * 0.5, 0), 10), 'edge');
+      hol.add(G.bez(G.P(-w * 0.5, 0), G.P(-w * 0.15, -ph * 0.02), G.P(0, ph * 0.12), G.P(0, ph * 0.18), 6), 'edge');
+      hol.add(G.bez(G.P(0, ph * 0.18), G.P(0, ph * 0.12), G.P(w * 0.15, -ph * 0.02), G.P(w * 0.5, 0), 6), 'edge');
+      hol.add(G.bez(G.P(w * 0.5, 0), G.P(w * 1.15, -ph * 0.05), G.P(w * 1.1, ph * 0.55), G.P(0, ph), 10), 'edge');
+      hol.close('edge');
+      pk = pieceFromOutline(hol, { name: 'Heart pocket', cut: { fabric: 2 * (n === 1 ? 1 : 2), note: 'outer + lining, the top dip is the opening' } });
+      pk.grain = { a: G.P(0, ph * 0.3), b: G.P(0, ph * 0.8) };
+    } else {
+      pk = strip(pw, ph + Math.max(0.6, ph * 0.25), { name: 'Pocket', cut: { fabric: n } }, { top: 'hem', right: 'seam', bottom: 'seam', left: 'seam' });
+      pk.edges.hem = { kind: 'hem', sa: 0.5, label: 'pocket top' };
+    }
+    P.push(pk);
+    if (n === 2) pc.notes.push('Two pockets: the one marked + its mirror on the other half.');
+  }
+  P.push(pc);
+  // hem ruffle(s) round the sides and hem
+  const edgeL = 2 * (edgeLength(pc, 'side') + edgeLength(pc, 'hem'));
+  if (ruffled) {
+    const rh = Math.max(0.6, L * 0.14);
+    [rh, o.apronHem === 'double ruffle' ? rh * 0.7 : 0].filter(Boolean).forEach((h, i) => {
+      const len = edgeL / f * 1.8;
+      const r = strip(Math.min(len, 140), h + 0.6, { name: i ? 'Second ruffle' : 'Ruffle', cut: { fabric: Math.max(1, Math.ceil(len / 140)), note: 'narrow-hem one long edge, gather the other to fit the sides and hem' + (len > 140 ? '; join strips' : '') } }, { top: 'seam', right: 'seam', bottom: 'hem', left: 'seam' });
+      r.edges.hem = { kind: 'hem', sa: o.apronLace ? 0.3 : 0.5, label: 'narrow hem' };
+      r.marks.push({ type: 'gather', pts: [G.P(0.2, 0.05), G.P(Math.min(len, 140) - 0.2, 0.05)], label: '' });
+      P.push(r);
+    });
+  }
+  if (o.apronHem === 'lace' || o.apronLace) addNotion(out, 'lace', 'lace edging', 1, cm(Math.ceil((ruffled ? edgeL / f * 1.8 : edgeL) * 1.05)));
+  return { pc, hw, L, f, edgeL };
+}
+function apronBandTies(m, o, out, P, Wt, wbIn) {
+  const wb = wbIn || Math.max(0.6, m.waistToHip * 0.2);
+  const big = o.bowSize === 'big';
+  const tieL = m.waistCirc * 0.55 * (big ? 1.5 : 1) + 1;
+  const tw = wb * (big ? 1.9 : 1);
+  const band = strip(Wt + 0.4, wb * 2, { name: 'Waistband', cut: { fabric: 1, interfacing: 1, note: 'folded lengthwise over the top of the skirt' } });
+  band.marks.push({ type: 'fold', a: G.P(0, wb), b: G.P(Wt + 0.4, wb), label: 'fold' });
+  band.marks.push({ type: 'notch', p: G.P((Wt + 0.4) / 2, 0), n: 1 });
+  const tie = strip(tieL, tw * 2, { name: big ? 'Bow tie (big)' : 'Waist tie', cut: { fabric: 2, note: 'folded, stitched, turned; one end slanted' } });
+  tie.marks.push({ type: 'fold', a: G.P(0, tw), b: G.P(tieL, tw), label: 'fold' });
+  P.push(band, tie);
+  return { wb, tieL, tw };
+}
+
+function buildApron(m, o, S, out) {
+  const P = [];
+  out.plan.family = 'apron';
+  out.used = ['waistCirc', 'hipCirc', 'chestCirc', 'acrossFront', 'acrossBack', 'frontNeckToWaist', 'napeToWaist', 'waistToKnee', 'waistToAnkle', 'waistToMidThigh', 'neckCirc', 'shoulderWidth', 'armholeDepth', 'headCirc'];
+  const it = o.item, k = m.k;
+  const add = (q, d) => out.steps.push({ quick: q, detail: d });
+  const L = apronLenCm(m, o);
+  const Wt = m.waistCirc * 0.55 + 0.4;
+  const plan = out.plan;
+  add('Cut the pieces.', 'Cut the pieces; transfer the gather / pleat marks and pocket placements. Crisp cotton, linen or broadcloth makes the neatest aprons at doll scale' + (it === 'maidapron' ? '; for a maid / lolita apron, a fine white cotton with lace is classic.' : '.'));
+  if (it === 'halfapron' || it === 'bibapron' || it === 'maidapron') {
+    const sk = apronSkirt(m, o, out, P, Wt, L);
+    const bt = apronBandTies(m, o, out, P, Wt);
+    plan.apron = { type: 'waist', Wt, L, f: sk.f, wb: bt.wb, tieL: bt.tieL, tw: bt.tw };
+    if (sk.f > 1) add(o.apronFull === 'pleated' ? 'Pleat the top.' : 'Gather the top.', o.apronFull === 'pleated' ? 'Fold the pleats along the marks toward the sides and baste them across the top — the top should now measure ' + cm(Wt) + '.' : 'Run two gathering rows across the top and pull them up to ' + cm(Wt) + '.');
+    if (o.apronPockets && o.apronPockets !== 'none') add('Make and attach the pocket' + (o.apronPockets === 'one' ? '' : 's') + '.', o.apronPockets === 'heart' ? 'Sew each heart to its lining round the edge, leaving a small gap; clip the curves and the dip, turn, press. Edgestitch it on the placement, leaving the top dip open.' : 'Hem the pocket top, press the other edges under and edgestitch it on the placement — do this before gathering.');
+    if (o.apronHem === 'ruffle' || o.apronHem === 'double ruffle') add('Add the ruffle' + (o.apronHem === 'double ruffle' ? 's' : '') + '.', 'Narrow-hem the long edge' + (o.apronLace ? ' (with the lace under it)' : '') + ', gather the other edge and sew it round the sides and hem, right sides together. Finish the seam and press it toward the apron; topstitch.' + (o.apronHem === 'double ruffle' ? ' Baste the shorter ruffle on top of the longer one first.' : ''));
+    else add('Hem the sides and hem.', 'Turn a narrow hem round the sides and the hem' + (o.apronHem === 'lace' ? ', sewing the lace under it as you go' : '') + '. On curves, keep the hem very narrow.');
+    if (it !== 'halfapron') {
+      // bib
+      const bh = m.frontNeckToWaist * (it === 'maidapron' ? 0.72 : 0.68), bt2 = m.acrossFront * 0.38, bb = m.acrossFront * 0.44;
+      const shp = o.bibShape;
+      const ol = new Outline();
+      ol.add([G.P(0, bh), G.P(bb, bh)], 'bottom');
+      if (shp === 'heart') {
+        ol.add(G.bez(G.P(bb, bh), G.P(bb * 1.05, bh * 0.45), G.P(bb * 1.15, -bh * 0.05), G.P(bb * 0.55, 0), 12), 'edge');
+        ol.add(G.bez(G.P(bb * 0.55, 0), G.P(bb * 0.2, 0), G.P(0, bh * 0.1), G.P(0, bh * 0.2), 8), 'edge');
+      } else if (shp === 'rounded') {
+        ol.add([G.P(bb, bh), G.P(bt2, bh * 0.25)], 'edge');
+        ol.add(G.bez(G.P(bt2, bh * 0.25), G.P(bt2, bh * 0.05), G.P(bt2 * 0.7, 0), G.P(bt2 * 0.45, 0), 8), 'edge');
+        ol.add([G.P(bt2 * 0.45, 0), G.P(0, 0)], 'edge');
+      } else if (shp === 'scalloped') {
+        ol.add([G.P(bb, bh), G.P(bt2, 0)], 'edge');
+        const n = 3, sw = bt2 / n, d = Math.min(sw * 0.5, bh * 0.08), pts = [];
+        for (let i = n; i > 0; i--) pts.push(...G.qbez(G.P(i * sw, 0), G.P((i - 0.5) * sw, -d * 2), G.P((i - 1) * sw, 0), 6));
+        ol.add(pts, 'edge');
+      } else { ol.add([G.P(bb, bh), G.P(bt2, 0)], 'edge'); ol.add([G.P(bt2, 0), G.P(0, 0)], 'edge'); }
+      ol.close('fold');
+      const bib = pieceFromOutline(ol, { name: 'Bib', cut: { fabric: 2, fold: true, interfacing: o.interfacing === 'fusible' ? 1 : 0, note: 'bib + bib lining' } });
+      bib.foldTag = 'fold'; bib.edges.fold = { kind: 'fold' }; bib.edges.edge = { kind: 'seam' }; bib.edges.bottom = { kind: 'seam', label: 'joins the waistband' };
+      bib.grain = { a: G.P(Math.min(0.6, bb * 0.3), bh * 0.25), b: G.P(Math.min(0.6, bb * 0.3), bh * 0.85) };
+      P.push(bib);
+      const g = Math.max(0.3, m.frontNeckToWaist - bh);                    // bib top → base of the neck
+      const sw = Math.max(0.5, k * 0.9);
+      let sL, nStr, sNote;
+      if (o.apronStraps === 'neck loop') { sL = 2 * (g * 1.05 + m.neckCirc * 0.32) + 1; nStr = 1; sNote = 'neck loop: one end on each bib corner'; }
+      else { sL = g + Math.hypot(m.napeToWaist * 1.02, m.acrossBack * 0.55) + 1.5; nStr = 2; sNote = o.apronStraps === 'button-on' ? 'buttoned to the waistband at the back' : 'cross at the back and are sewn to the waistband ends'; }
+      const strap = strip(sL, sw * 2, { name: o.apronStraps === 'neck loop' ? 'Neck strap' : 'Shoulder strap', cut: { fabric: nStr, note: 'folded, stitched, turned — ' + sNote } });
+      strap.marks.push({ type: 'fold', a: G.P(0, sw), b: G.P(sL, sw), label: 'fold' });
+      P.push(strap);
+      if (o.frillStraps && o.apronStraps !== 'neck loop') {
+        const fl2 = sL * 0.55 * 1.8, fh = sw * 1.8;
+        const fr = strip(fl2, fh + 0.5, { name: 'Strap frill', cut: { fabric: 2, note: 'narrow-hemmed, gathered into the outer edge of each strap over the shoulder' } }, { top: 'seam', right: 'seam', bottom: 'hem', left: 'seam' });
+        fr.edges.hem = { kind: 'hem', sa: 0.3, label: 'narrow hem' };
+        fr.marks.push({ type: 'gather', pts: [G.P(0.2, 0.05), G.P(fl2 - 0.2, 0.05)], label: '' });
+        P.push(fr);
+        add('Make the frilled straps.', 'Narrow-hem one long edge of each frill, gather the other to cover the shoulder part of the strap (about ' + cm(sL * 0.55) + ') and sew it into the outer edge of the strap as you stitch it.');
+      }
+      if (o.apronStraps === 'button-on') addNotion(out, 'button', 'buttons for the strap ends', 2);
+      add('Make the bib.', 'Place bib and bib lining right sides together with the strap ends sandwiched at the top corners. Stitch round the sides and top, leaving the bottom open. Clip, turn, press, edgestitch.');
+      add('Assemble.', 'Sew the bib to the centre of the waistband and the skirt below it. Fold the waistband over, slip the tie ends into its open ends, turn the edge under and topstitch all round.' + (o.apronStraps === 'neck loop' ? '' : ' Cross the straps at the back and ' + (o.apronStraps === 'button-on' ? 'button them to the waistband.' : 'sew them to the waistband ends on the doll.')));
+      plan.apron.bib = { bh, bt: bt2, bb, shp, straps: o.apronStraps, frill: !!o.frillStraps, sL };
+    } else add('Add the waistband and ties.', 'Make the ties (fold, stitch, turn). Sew the waistband to the gathered top right sides together, fold it over, slip the ties into the open ends, turn the edge under and topstitch all round.');
+  } else if (it === 'pinafore') {
+    const topF = m.frontNeckToWaist * 0.42;                          // top edge below the neck
+    const hTop = m.frontNeckToWaist - topF;                          // top edge → waist
+    const H = hTop + L;
+    const tw = m.acrossFront * 0.46, uw = m.chestCirc * 0.25 * 1.12, hemW = Math.max(m.hipCirc * 0.3 * 1.25, uw * 1.25);
+    const yU = Math.min(hTop * 0.55, m.armholeDepth * 0.5);
+    const front = new Outline();
+    front.add([G.P(0, 0), G.P(tw, 0)], 'top');
+    front.add(G.bez(G.P(tw, 0), G.P(tw, yU * 0.6), G.P(uw * 0.9, yU), G.P(uw, yU), 8), 'armhole');
+    front.add([G.P(uw, yU), G.P(hemW, H)], 'side');
+    front.add(G.qbez(G.P(hemW, H), G.P(hemW * 0.5, H + H * 0.02), G.P(0, H + H * 0.02), 8), 'hem');
+    front.close('fold');
+    const F = pieceFromOutline(front, { name: 'Pinafore front', cut: { fabric: 1, fold: true } });
+    F.foldTag = 'fold'; F.edges.fold = { kind: 'fold' }; F.edges.top = { kind: 'seam', label: 'faced' }; F.edges.armhole = { kind: 'seam', label: 'bound' }; F.edges.side = { kind: 'seam' }; F.edges.hem = { kind: 'hem' };
+    F.grain = { a: G.P(Math.min(1, tw * 0.3), H * 0.2), b: G.P(Math.min(1, tw * 0.3), H * 0.8) };
+    const sideJoin = m.waistToHip + hTop - yU;
+    F.marks.push({ type: 'dot', kind: 'dot', p: G.lerp(G.P(uw, yU), G.P(hemW, H), Math.min(0.9, sideJoin / Math.max(1, H - yU))), label: 'side seam ends' });
+    if (o.apronPockets && o.apronPockets !== 'none') F.marks.push({ type: 'place', pts: [G.P(hemW * 0.25, H * 0.5), G.P(hemW * 0.7, H * 0.5), G.P(hemW * 0.7, H * 0.66), G.P(hemW * 0.25, H * 0.66)], label: 'pocket' });
+    // back: two panels that overlap at CB
+    const bw = m.acrossBack * 0.5 + m.chestCirc * 0.04, bHem = hemW * 0.95, Hb = H - topF * 0.1;
+    const back = new Outline();
+    back.add([G.P(-bw * 0.35, 0), G.P(bw * 0.5, 0)], 'top');
+    back.add(G.bez(G.P(bw * 0.5, 0), G.P(bw * 0.55, yU * 0.6), G.P(uw * 0.9, yU), G.P(uw, yU), 8), 'armhole');
+    back.add([G.P(uw, yU), G.P(bHem, Hb)], 'side');
+    back.add([G.P(bHem, Hb), G.P(-bw * 0.35, Hb)], 'hem');
+    back.add([G.P(-bw * 0.35, Hb), G.P(-bw * 0.35, 0)], 'cb');
+    back.close('cb');
+    const B = pieceFromOutline(back, { name: 'Pinafore back', cut: { fabric: 2, mirrored: true, note: 'the two backs overlap at the centre' } });
+    B.edges.cb = { kind: 'hem', sa: 0.6, label: 'hem' }; B.edges.top = { kind: 'seam', label: 'faced' }; B.edges.armhole = { kind: 'seam', label: 'bound' }; B.edges.side = { kind: 'seam' }; B.edges.hem = { kind: 'hem' };
+    B.grain = { a: G.P(0, Hb * 0.2), b: G.P(0, Hb * 0.8) };
+    const swd = Math.max(0.7, m.acrossFront * 0.12);
+    const sL = topF + Math.hypot(m.napeToWaist * 0.45, m.acrossBack * 0.55) + 1.2;
+    const strap = strip(sL, swd * 2, { name: 'Cross strap', cut: { fabric: 2, note: 'folded, stitched, turned' } });
+    strap.marks.push({ type: 'fold', a: G.P(0, swd), b: G.P(sL, swd), label: 'fold' });
+    P.push(F, B, strap);
+    if (o.apronPockets && o.apronPockets !== 'none') { const pk = strip(hemW * 0.45, H * 0.2, { name: 'Pocket', cut: { fabric: 1 } }, { top: 'hem', right: 'seam', bottom: 'seam', left: 'seam' }); pk.edges.hem = { kind: 'hem', sa: 0.5 }; P.push(pk); }
+    const bind = strip((G.plen(edgeRuns(F.pts, F.tags).armhole[0].pts) + G.plen(edgeRuns(B.pts, B.tags).armhole[0].pts)) * 2 + 1, Math.max(0.5, k * 0.8) * 4, { name: 'Armhole & top binding', cut: { fabric: 1, bias: true, note: 'bias strip; binds the armholes (and the top edges if you prefer binding to facing)' } });
+    P.push(bind);
+    add('Sew the side seams.', 'Front to backs at the sides, from the armhole down to the dot; hem the slits below.');
+    add('Bind the armholes, face the top.', 'Bind the armhole curves with the bias strip. Make the straps; sandwich one end at each front top corner and finish the top edges (fold under twice or bind).');
+    add('Attach the straps.', 'On the doll, cross the straps at the back and sew each to the top of the opposite back panel. Hem the centre-back edges and the hem.');
+    plan.apron = { type: 'pinafore', topF, H, tw, uw, hemW, yU, L };
+  } else if (it === 'tabard') {
+    const Hs = m.frontNeckToWaist + L, Hb = m.napeToWaist + L;
+    const pw = m.acrossFront * 0.5 + m.chestCirc * 0.05;         // half panel width
+    const nw = Math.max(m.neckCirc / Math.PI * 0.62, 0.8);        // half neck width
+    const dB = Math.max(0.2, m.neckCirc * 0.04);
+    const per = (dF) => 2 * Math.PI * nw * 0.5 + 2 * (dF + dB) * 0.9;     // rough neck opening perimeter
+    let dF = Math.max(m.neckCirc * 0.14, 0.6);
+    for (let i = 0; i < 40 && per(dF) < m.headCirc * 1.04; i++) dF += 0.15;
+    // keep the front neckline modest: past a quarter of the way to the waist, open a back slit instead
+    const maxDF = m.frontNeckToWaist * 0.25;
+    let slit = 0;
+    if (dF > maxDF) { dF = maxDF; slit = Math.max(0, (m.headCirc * 1.04 - per(dF)) / 2); }
+    const mk = (front) => {
+      const d = front ? dF : dB, H = front ? Hs : Hb, ol = new Outline();
+      const neck = o.tabardNeck === 'V' && front ? [G.P(nw, 0), G.P(0, d * 1.25)] : o.tabardNeck === 'square' && front ? [G.P(nw, 0), G.P(nw, d), G.P(0, d)] : G.bez(G.P(nw, 0), G.P(nw, d * 0.6), G.P(nw * 0.55, d), G.P(0, d), 10);
+      ol.add(neck.slice().reverse(), 'neck');
+      ol.add([G.P(nw, 0), G.P(pw, Math.max(0.15, m.shoulderWidth * 0.12))], 'shoulder');
+      ol.add([G.P(pw, Math.max(0.15, m.shoulderWidth * 0.12)), G.P(pw, H)], 'side');
+      if (o.tabardHem === 'pointed') ol.add([G.P(pw, H), G.P(0, H + pw * 0.6)], 'hem');
+      else if (o.tabardHem === 'rounded') ol.add(G.bez(G.P(pw, H), G.P(pw, H + pw * 0.4), G.P(pw * 0.5, H + pw * 0.45), G.P(0, H + pw * 0.45), 10), 'hem');
+      else ol.add([G.P(pw, H), G.P(0, H)], 'hem');
+      ol.close('fold');
+      const pc = pieceFromOutline(ol, { name: front ? 'Tabard front' : 'Tabard back', cut: { fabric: 2, fold: true, note: 'outer + lining (or one layer with hemmed edges)' } });
+      pc.foldTag = 'fold'; pc.edges.fold = { kind: 'fold' }; pc.edges.neck = { kind: 'seam' }; pc.edges.shoulder = { kind: 'seam' }; pc.edges.side = { kind: 'seam' }; pc.edges.hem = { kind: 'seam' };
+      pc.grain = { a: G.P(Math.min(1, pw * 0.3), H * 0.25), b: G.P(Math.min(1, pw * 0.3), H * 0.8) };
+      if (o.tabardTie === 'side ties') pc.marks.push({ type: 'dot', kind: 'dot', p: G.P(pw - 0.05, (front ? m.frontNeckToWaist : m.napeToWaist)), label: 'tie' });
+      if (!front && slit > 0.05) { pc.marks.push({ type: 'cut', a: G.P(0, d), b: G.P(0, d + slit), label: 'back slit' }); pc.marks.push({ type: 'dot', kind: 'button', p: G.P(0.35, d + 0.2), label: '' }); }
+      return pc;
+    };
+    P.push(mk(true), mk(false));
+    if (o.tabardTie === 'side ties') { const tl = (m.waistCirc - pw * 4) / 2 + 3, twd = Math.max(0.35, k * 0.5); const t = strip(Math.max(3, tl), twd * 2, { name: 'Side tie', cut: { fabric: 4, note: 'one at each side of the front and the back' } }); t.marks.push({ type: 'fold', a: G.P(0, twd), b: G.P(Math.max(3, tl), twd), label: 'fold' }); P.push(t); }
+    if (o.tabardTie === 'belt') { const bl = m.waistCirc * 1.25 + 4, bw2 = Math.max(0.6, m.waistToHip * 0.2); const b = strip(bl, bw2 * 2, { name: 'Belt', cut: { fabric: 1, interfacing: 1 } }); b.marks.push({ type: 'fold', a: G.P(0, bw2), b: G.P(bl, bw2), label: 'fold' }); P.push(b); }
+    if (slit > 0.05) { out.notes.push('Neck opening: ' + cm(per(dF)) + ' round plus a ' + cm(slit) + ' slit at the back of the neck, closed with a tiny button and loop — so the head (' + cm(m.headCirc) + ') goes through while the front neckline stays high.'); addNotion(out, 'button', 'tiny button + thread loop for the back slit', 1); add('Make the back slit.', 'Before lining, cut the slit down the back fold; when you sew the lining on round the neck, stitch round the slit too, then cut, turn and press. Add the button and a thread loop at the top.'); }
+    else out.notes.push('Neck opening: about ' + cm(per(dF)) + ' round — enough for the head (' + cm(m.headCirc) + ') to go through without a fastening.');
+    add('Join the shoulders.', 'Sew front to back at the shoulders, outer and lining separately.');
+    add('Line the tabard.', 'Lay the lining over it right sides together' + (o.tabardTie === 'side ties' ? ', with the ties sandwiched at the side dots' : '') + '. Stitch round the neck and all the outer edges, leaving a gap; clip, turn through the gap, press, close it, edgestitch.');
+    plan.apron = { type: 'tabard', Hs, Hb, pw, nw, dF, dB, L, slit };
+  }
+  out.pieces.push(...P);
+  out.readout.size = 'length ' + cm(L) + ' below the waist';
+  out.flat = Object.assign({ kind: 'apron', item: it }, plan.apron || {});
+}
+
+function apronFlat(out, F) {
+  const m = out.m, o = out.o;
+  const T = torso(m, true);
+  const yW = m.shoulderToWaist, nw0 = m.neckCirc / Math.PI / 2;
+  const hipW = m.hipCirc / Math.PI / 2 * 1.3;
+  const views = [];
+  ['FRONT', 'BACK'].forEach(label => {
+    const front = label === 'FRONT', items = [ln(T, 'flatd')];
+    const wavy = (x0, x1, y, amp) => { const p = []; for (let i = 0; i <= 14; i++) p.push(G.P(x0 + (x1 - x0) * i / 14, y + (i % 2 ? amp : 0))); return p; };
+    if (F.type === 'waist') {
+      const hw = Math.min(hipW * 0.95, F.Wt / 2 * 1.15), L = F.L;
+      const bottom = hw * (F.f > 1 ? 1.25 : 1.05);
+      if (front) {
+        const sh = o.apronShape === 'curved' ? G.spline([G.P(-hw, yW), G.P(-bottom, yW + L * 0.5), G.P(-bottom * 0.6, yW + L * 0.95), G.P(0, yW + L), G.P(bottom * 0.6, yW + L * 0.95), G.P(bottom, yW + L * 0.5), G.P(hw, yW)], 8)
+          : o.apronShape === 'rounded' ? [G.P(-hw, yW), G.P(-bottom, yW + L * 0.75), G.P(-bottom * 0.8, yW + L), G.P(bottom * 0.8, yW + L), G.P(bottom, yW + L * 0.75), G.P(hw, yW)]
+            : [G.P(-hw, yW), G.P(-bottom, yW + L), G.P(bottom, yW + L), G.P(hw, yW)];
+        items.push(fl(sh));
+        if (o.apronShape === 'scalloped') items.push(ln(wavy(-bottom, bottom, yW + L, L * 0.04), 'flat'));
+        if (F.f > 1) for (let i = 1; i < 10; i++) { const x = -hw + hw * 2 * i / 10; items.push(dashed([G.P(x, yW + F.wb), G.P(x * 1.15, yW + F.wb + L * 0.25)])); }
+        if (o.apronHem === 'ruffle' || o.apronHem === 'double ruffle') { items.push(ln(wavy(-bottom * 1.08, bottom * 1.08, yW + L + L * 0.13, -L * 0.03), 'flat')); items.push(ln([G.P(-bottom, yW + L), G.P(-bottom * 1.08, yW + L + L * 0.13)], 'flat'), ln([G.P(bottom, yW + L), G.P(bottom * 1.08, yW + L + L * 0.13)], 'flat')); }
+        if (o.apronHem === 'lace' || o.apronLace) items.push(dashed(wavy(-bottom, bottom, yW + L + (o.apronHem.includes('ruffle') ? L * 0.15 : 0.25), 0.2)));
+        if (o.apronPockets && o.apronPockets !== 'none') [-1, 1].slice(o.apronPockets === 'one' ? 1 : 0).forEach(sg => { const cx = sg * hw * 0.5, py = yW + L * 0.3, pw = F.Wt * 0.12; items.push(o.apronPockets === 'heart' ? fl(G.spline([G.P(cx, py + pw * 1.6), G.P(cx - pw, py + pw * 0.6), G.P(cx - pw * 0.6, py), G.P(cx, py + pw * 0.3), G.P(cx + pw * 0.6, py), G.P(cx + pw, py + pw * 0.6), G.P(cx, py + pw * 1.6)], 6)) : fl([G.P(cx - pw, py), G.P(cx + pw, py), G.P(cx + pw, py + pw * 1.6), G.P(cx - pw, py + pw * 1.6)])); });
+        if (F.bib) {
+          const b = F.bib, top = yW - b.bh, tw = b.bt * 1.05, bw = b.bb * 1.05;
+          const bibPts = b.shp === 'heart' ? G.spline([G.P(0, top + b.bh * 0.2), G.P(-bw * 0.6, top), G.P(-bw * 1.1, top + b.bh * 0.3), G.P(-bw, yW), G.P(bw, yW), G.P(bw * 1.1, top + b.bh * 0.3), G.P(bw * 0.6, top), G.P(0, top + b.bh * 0.2)], 6) : b.shp === 'rounded' ? G.spline([G.P(-bw, yW), G.P(-tw, top + b.bh * 0.2), G.P(-tw * 0.6, top), G.P(tw * 0.6, top), G.P(tw, top + b.bh * 0.2), G.P(bw, yW)], 6) : [G.P(-bw, yW), G.P(-tw, top), G.P(tw, top), G.P(bw, yW)];
+          items.push(fl(bibPts));
+          if (b.shp === 'scalloped') items.push(ln(wavy(-tw, tw, top, -0.25), 'flat'));
+          [-1, 1].forEach(sg => { const x = sg * tw * 0.85; items.push(ln(b.straps === 'neck loop' ? [G.P(x, top), G.P(sg * nw0 * 1.1, 0)] : [G.P(x, top), G.P(sg * (nw0 + m.shoulderWidth * 0.6), m.shoulderWidth * 0.2)], 'flat')); if (b.frill && b.straps !== 'neck loop') items.push(ln(wavy(x + sg * 0.3, sg * (nw0 + m.shoulderWidth * 1.1), top * 0.5, 0.25), 'flat')); });
+        }
+        items.push(fl([G.P(-hw, yW), G.P(hw, yW), G.P(hw, yW + F.wb), G.P(-hw, yW + F.wb)]));
+      } else {
+        items.push(fl([G.P(-hw * 0.55, yW), G.P(hw * 0.55, yW), G.P(hw * 0.55, yW + F.wb), G.P(-hw * 0.55, yW + F.wb)]));
+        const bs = F.tw * 3;
+        items.push(fl([G.P(0, yW + F.wb / 2), G.P(-bs * 1.4, yW - bs * 0.5), G.P(-bs * 1.4, yW + bs)]), fl([G.P(0, yW + F.wb / 2), G.P(bs * 1.4, yW - bs * 0.5), G.P(bs * 1.4, yW + bs)]));
+        items.push(ln([G.P(-bs * 0.2, yW + F.wb), G.P(-bs * 0.8, yW + F.wb + F.tieL * 0.35)], 'flat'), ln([G.P(bs * 0.2, yW + F.wb), G.P(bs * 0.7, yW + F.wb + F.tieL * 0.38)], 'flat'));
+        if (F.bib && F.bib.straps !== 'neck loop') [-1, 1].forEach(sg => items.push(ln([G.P(sg * (nw0 + m.shoulderWidth * 0.6), m.shoulderWidth * 0.2), G.P(-sg * hw * 0.5, yW)], 'flat')));
+        if (F.bib && F.bib.straps === 'neck loop') items.push(ln(G.qbez(G.P(-nw0, 0.1), G.P(0, 0.6), G.P(nw0, 0.1), 6), 'flat'));
+      }
+    } else if (F.type === 'pinafore') {
+      const top = yW - (m.frontNeckToWaist - F.topF) * (yW / m.frontNeckToWaist), bot = top + F.H * (yW / m.frontNeckToWaist) * 0.98;
+      const tw = F.tw * 1.05, hw = F.hemW;
+      items.push(fl(front ? [G.P(-tw, top), G.P(tw, top), G.P(F.uw * 1.05, top + F.yU), G.P(hw, bot), G.P(-hw, bot), G.P(-F.uw * 1.05, top + F.yU)] : [G.P(-F.uw, top + F.yU * 0.6), G.P(F.uw, top + F.yU * 0.6), G.P(hw * 0.95, bot), G.P(-hw * 0.95, bot)]));
+      if (!front) { items.push(ln([G.P(hw * 0.2, top + F.yU * 0.6), G.P(hw * 0.2, bot)], 'flat')); [-1, 1].forEach(sg => items.push(ln([G.P(sg * (nw0 + m.shoulderWidth * 0.5), m.shoulderWidth * 0.2), G.P(-sg * F.uw * 0.7, top + F.yU * 0.6)], 'flat'))); }
+      else { [-1, 1].forEach(sg => items.push(ln([G.P(sg * tw * 0.8, top), G.P(sg * (nw0 + m.shoulderWidth * 0.5), m.shoulderWidth * 0.2)], 'flat'))); if (o.apronPockets && o.apronPockets !== 'none') items.push(fl([G.P(-hw * 0.4, (top + bot) * 0.55), G.P(hw * 0.4, (top + bot) * 0.55), G.P(hw * 0.4, (top + bot) * 0.68), G.P(-hw * 0.4, (top + bot) * 0.68)])); }
+    } else if (F.type === 'tabard') {
+      const H = (front ? F.Hs : F.Hb) * (yW / (front ? m.frontNeckToWaist : m.napeToWaist)), pw = F.pw * 1.05;
+      const hem = o.tabardHem === 'pointed' ? [G.P(pw, H), G.P(0, H + pw * 0.6), G.P(-pw, H)] : o.tabardHem === 'rounded' ? G.spline([G.P(pw, H), G.P(pw * 0.6, H + pw * 0.4), G.P(0, H + pw * 0.45), G.P(-pw * 0.6, H + pw * 0.4), G.P(-pw, H)], 6) : [G.P(pw, H), G.P(-pw, H)];
+      items.push(fl([G.P(-F.nw, 0), G.P(-pw, m.shoulderWidth * 0.15)].concat(hem.slice().reverse().map(p => p), [G.P(pw, m.shoulderWidth * 0.15), G.P(F.nw, 0)])));
+      const d = front ? F.dF : F.dB;
+      items.push(ln(o.tabardNeck === 'V' && front ? [G.P(-F.nw, 0), G.P(0, d * 1.25), G.P(F.nw, 0)] : o.tabardNeck === 'square' && front ? [G.P(-F.nw, 0), G.P(-F.nw, d), G.P(F.nw, d), G.P(F.nw, 0)] : G.qbez(G.P(-F.nw, 0), G.P(0, d * 1.9), G.P(F.nw, 0), 8), 'flat'));
+      if (o.tabardTie === 'belt') items.push(fl([G.P(-pw * 1.05, yW), G.P(pw * 1.05, yW), G.P(pw * 1.05, yW + 0.7), G.P(-pw * 1.05, yW + 0.7)]));
+      if (o.tabardTie === 'side ties' && front) [-1, 1].forEach(sg => items.push(ln([G.P(sg * pw, yW), G.P(sg * (pw + 0.9), yW + 0.6)], 'flat')));
+    }
+    views.push({ label, items });
+  });
+  return views;
+}
+
+
+;
+// ===================== LEG & BOOT ITEMS =====================
+// Boot covers, spats / gaiters, boot cuffs and ankle cuffs. Covers and spats use the same "side profile"
+// as Doll sew's socks (hosiery.js — the hose* functions below are copied from there unchanged): two
+// mirrored layers per leg, seamed down the front and back, every width half the girth at that point.
+// A boot cover is that sock with an open sole (an elastic casing tucks under the shoe) and a stirrup;
+// a spat stops across the instep. Over shoes, the foot measurements grow by the shoe's bulk.
+
+function hoseLevels(m) {
+  const aH = m.ankleHeight;
+  const kA = Math.max(m.footLength * 0.8, m.waistToAnkle - m.waistToKnee); // ankle to knee
+  const zK = aH + kA;
+  return { aH, kA, zC: aH + kA * 0.68, zK, zT: zK + m.crotchToKnee };
+}
+function hoseCircAt(m, L, z) {
+  const a = m.ankleCirc, c = Math.max(m.calfCirc, a), k = Math.max(m.kneeCirc, a), t = Math.max(m.thighCirc, k, c);
+  const tab = [[-50, a], [L.aH, a], [L.zC, c], [L.zK, k], [L.zT, t], [L.zT + 100, t]];
+  for (let i = 1; i < tab.length; i++) if (z <= tab[i][0]) { const [z0, c0] = tab[i - 1], [z1, c1] = tab[i]; return c0 + (c1 - c0) * (z - z0) / (z1 - z0); }
+  return t;
+}
+function hoseFootGirth(m, s) {
+  const FL = m.footLength;
+  const tab = [[-99, m.instepCirc], [0.42 * FL, m.instepCirc], [0.72 * FL, m.footCirc], [0.95 * FL, m.footCirc * 0.62], [99, m.footCirc * 0.62]];
+  for (let i = 1; i < tab.length; i++) if (s <= tab[i][0]) { const [s0, c0] = tab[i - 1], [s1, c1] = tab[i]; return c0 + (c1 - c0) * (s - s0) / (s1 - s0); }
+  return m.footCirc * 0.62;
+}
+function hoseInstepTarget(m, endS, endH) {
+  const FL = m.footLength, hL = m.heelLift || 0;
+  const lift = (s) => hL * Math.max(0, 1 - s / (0.72 * FL));
+  const s0 = Math.min(0.36 * FL, m.ankleCirc / Math.PI * 1.05);
+  const pts = [[s0, m.ankleHeight * 0.95], [0.42 * FL, m.instepCirc / Math.PI * 0.95], [0.72 * FL, m.footCirc / Math.PI * 0.72], [endS * FL, endH]];
+  let L = 0;
+  for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], (pts[i][1] + lift(pts[i][0])) - (pts[i - 1][1] + lift(pts[i - 1][0])));
+  return L * 1.03; // the surface is curved, not straight
+}
+function hoseClip(pts, tags, a, b, keep, newTag) {
+  const side = (p) => G.cross(G.sub(b, a), G.sub(p, a));
+  const s0 = Math.sign(side(keep)) || 1;
+  const inside = (p) => side(p) * s0 >= -1e-9;
+  const outP = [], arrive = [];
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const P = pts[i], Q = pts[(i + 1) % n], t = tags[i];
+    const iP = inside(P), iQ = inside(Q);
+    const X = () => { const r = G.lineIntersect(P, G.sub(Q, P), a, G.sub(b, a)); return r || P; };
+    if (iP && iQ) { outP.push(Q); arrive.push(t); }
+    else if (iP && !iQ) { outP.push(X()); arrive.push(t); }
+    else if (!iP && iQ) { outP.push(X()); arrive.push(newTag); outP.push(Q); arrive.push(t); }
+  }
+  if (outP.length < 3) return null;
+  const ol = new Outline();
+  ol.add([outP[0]], arrive[1]);
+  for (let k = 1; k < outP.length; k++) ol.add([outP[k]], arrive[k]);
+  ol.close(arrive[0]);
+  return ol;
+}
+function hoseCross(a, b) {
+  for (let i = 1; i < a.length; i++) for (let j = 1; j < b.length; j++) {
+    const r = G.segIntersect(a[i - 1], a[i], b[j - 1], b[j]);
+    if (r) return { p: r.p, i, j };
+  }
+  return null;
+}
+function hoseLayer(m, L, P) {
+  const aH = L.aH;
+  // always drafted with enough leg for the instep corner to form, then cut down to the real top edge
+  const zTop = Math.max(P.zTop, aH + L.kA * 0.45, aH * 2.2);
+  const yA = (zTop - aH) * P.lenK;
+  // leg widths (half girth), opened up at the ankle if the heel would not get through
+  // slouch socks stay fitted round the ankle and only get loose higher up
+  const redA = P.redAnkle ?? P.redLeg, zLoose = aH + L.kA * 0.35;
+  const redAt = (z) => z >= zLoose ? P.redLeg : redA + (P.redLeg - redA) * Math.max(0, (z - aH) / (zLoose - aH));
+  const wRaw = (z) => hoseCircAt(m, L, z) * (1 - redAt(z)) / 2;
+  const wA0 = wRaw(aH), add = Math.max(0, P.wAnkleMin - wA0), blendTo = aH + L.kA * 0.3;
+  const w = (z) => wRaw(z) + (z < blendTo ? add * (1 - (z - aH) / (blendTo - aH)) : 0);
+  const wA = w(aH);
+  const N = 18, front = [], back = [];
+  for (let i = 0; i <= N; i++) {
+    const z = zTop - (zTop - aH) * i / N, y = (zTop - z) * P.lenK;
+    const xb = -(w(z) - wA) * 0.6;
+    back.push(G.P(xb, y)); front.push(G.P(xb + w(z), y));
+  }
+  const frontExt = front.concat([G.P(wA, yA + aH * 4 + 6)]);
+  const sAnkle = G.plen(front);
+  // foot in its own frame: u along the sole from the heel-sole point H0, v up into the foot
+  const hb = aH * 0.42;                             // heel bulge behind the back of the ankle
+  const A = G.P(-aH * 0.12, aH * 1.0);              // back of the ankle in the foot frame
+  const u0 = aH * 0.5;                                // tabi uppers bend (like a moccasin upper) from here forward
+  const build = (phi, kap = 0) => {
+    const c = Math.cos(phi), s = Math.sin(phi);
+    const bend = (p) => {
+      if (!(kap > 1e-6) || p.x <= u0) return p;
+      const R = 1 / kap, ur = p.x - u0;
+      return G.P(u0 + (R - p.y) * Math.sin(ur / R), R - (R - p.y) * Math.cos(ur / R));
+    };
+    const W = (p0) => { const p = bend(p0); return G.P(p.x - A.x, p.y - A.y); };
+    const T = (p) => { const q = W(p); return G.P(q.x * c + q.y * s, yA + q.x * s - q.y * c); };
+    const top = [], ub = P.Lb;
+    // top line, from far behind (so it is sure to meet the leg) to the ball
+    const uBall = P.uBall;
+    for (let u = -m.footLength * 1.2; u < uBall; u += m.footLength / 30) top.push(G.P(u, P.depth(u)));
+    top.push(G.P(uBall, P.depth(uBall)));
+    const dB = P.depth(uBall);
+    let toe, sole;
+    if (P.toe === 'split') {
+      toe = G.bez(G.P(uBall, dB), G.P(uBall + (ub - uBall) * 0.65, dB), G.P(ub, dB * 0.55), G.P(ub, 0), 12);
+      sole = [G.P(ub, 0), G.P(aH * 0.15, 0)];
+    } else {
+      const tip = G.P(ub, dB * 0.42);
+      toe = G.bez(G.P(uBall, dB), G.P(uBall + (ub - uBall) * 0.6, dB), G.P(ub, dB * 0.78), tip, 10)
+        .concat(G.bez(tip, G.P(ub, dB * 0.1), G.P(ub - dB * 0.2, 0), G.P(ub - dB * 0.42, 0), 8).slice(1));
+      sole = [G.P(ub - dB * 0.42, 0), G.P(aH * 0.15, 0)];
+    }
+    const heel = G.bez(G.P(aH * 0.15, 0), G.P(-hb * 0.9, 0), G.P(-hb, aH * 0.55), A, 12);
+    const topW = top.map(T), toeW = toe.map(T), soleW = sole.map(T), heelW = heel.map(T);
+    // the leg meets the foot on the top line — or, on chubby small dolls whose leg is wider than the foot is long, on the toe
+    const contour = topW.concat(toeW.slice(1));
+    const X = hoseCross(frontExt, contour);
+    if (!X) return null;
+    const nTop = topW.length;
+    // round the inside corner where the leg meets the top of the foot
+    const r = Math.min(0.35, aH * 0.25);
+    const fPart = frontExt.slice(0, X.i).concat([X.p]);
+    const tPart = [X.p].concat(contour.slice(X.j));          // from the corner to the end of the toe
+    const fL = G.plen(fPart), tL = G.plen(tPart);
+    const rr = Math.min(r, tL * 0.3);
+    const a1 = G.pointAt(fPart, Math.max(0, fL - rr)).p, b1 = G.pointAt(tPart, Math.min(tL, rr)).p;
+    const corner = G.qbez(a1, X.p, b1, 6);
+    const frontRun = G.slice(fPart, 0, Math.max(0, fL - rr)).concat(corner.slice(1)).concat(G.slice(tPart, Math.min(tL, rr), tL).slice(1));
+    const sJ = fL; // position of the corner along the leg front
+    // seam over the instep: corner → toe tip (the round toe's tip is halfway round it)
+    const tipLen = P.toe === 'split' ? 0 : G.plen(toeW) * 0.5;
+    const frontLen = (sJ - sAnkle) + tL - tipLen;
+    void nTop;
+    return { frontRun, soleW, heelW, J: X.p, frontLen, T, phi, dB, kap };
+  };
+  // swing the foot down until the seam over the instep is as long as on the doll
+  // (the angle may also go negative — foot tipped up — when the seam over the instep is already too long)
+  const angles = []; for (let a = -0.7; a <= 1.25 + 1e-9; a += 0.05) angles.push(a);
+  const tries = angles.map(a => ({ a, r: build(a) })).filter(x => x.r);
+  let best = null;
+  const flat0 = P.bend ? build(0.55, 0) : null;
+  if (flat0 && flat0.frontLen > P.target) {
+    // tabi: the bottom edge (half the sole's outline) is longer than the seam over the instep — curl the
+    // foot so the instep seam is on the inside of the curve, at a natural foot angle
+    // the foot is tipped down by half of its curl, so the toe ends up pointing forward and down
+    const kMax = 1 / (Math.max(P.depth(P.uBall), P.depth(0)) * 1.25);
+    let phi0 = 0.55, good = null;
+    for (let pass = 0; pass < 4; pass++) {
+      let lo = 0, hi = kMax, r0 = build(phi0, 0);
+      for (let it = 0; it < 40 && r0; it++) { const mid = (lo + hi) / 2, r = build(phi0, mid); if (!r) { hi = mid; continue; } if (r.frontLen > P.target) lo = mid; else hi = mid; r0 = r; }
+      if (!r0) break;
+      good = r0;
+      phi0 = Math.min(1.1, 0.45 + Math.max(0, P.Lb - u0) * r0.kap / 2);
+    }
+    best = good;
+  } else if (tries.length) {
+    const k = tries.findIndex(x => x.r.frontLen >= P.target);
+    if (k <= 0) best = (k === 0 ? tries[0] : tries.reduce((p, q) => Math.abs(q.r.frontLen - P.target) < Math.abs(p.r.frontLen - P.target) ? q : p)).r;
+    else {
+      let lo = tries[k - 1].a, hi = tries[k].a; best = tries[k].r;
+      for (let it = 0; it < 30; it++) { const mid = (lo + hi) / 2, r = build(mid); if (!r) break; if (r.frontLen < P.target) lo = mid; else hi = mid; best = r; }
+    }
+  }
+  if (!best) throw new Error('foot draft failed');
+  // assemble the outline: top → front & instep & toe → sole → heel → back
+  const ol = new Outline();
+  ol.add([back[0], front[0]], 'top');
+  ol.add(best.frontRun, 'seam');
+  ol.add(best.soleW, 'sole');
+  ol.add(best.heelW, 'seam');
+  ol.add(back.slice().reverse(), 'seam');
+  ol.close('seam');
+  const heelPt = best.T(G.P(-hb, aH * 0.4));
+  let cut = ol, openLen = 0;
+  if (P.cut === 'ankle') {
+    // the foot of tights: cut along the ankle line, back of the ankle → front corner
+    const Ab = G.P(0, yA);
+    cut = hoseClip(ol.pts, ol.tags, Ab, best.J, heelPt, 'top') || ol;
+    openLen = G.dist(Ab, best.J);
+  } else if (P.zTop < zTop - 1e-6) {
+    const yCut = P.zTop >= aH ? (zTop - P.zTop) * P.lenK : yA + (aH - P.zTop);
+    cut = hoseClip(ol.pts, ol.tags, G.P(-100, yCut), G.P(100, yCut), G.P(0, yCut + 100), 'top') || ol;
+  }
+  return { ol: cut, best, yA, wA, wAdd: add, front, back, zTop, openLen, heelPt, toePt: best.T(G.P(P.Lb, best.dB * 0.4)) };
+}
+function hoseSpan(pts, y) {
+  const xs = [];
+  for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; if ((a.y - y) * (b.y - y) <= 0 && a.y !== b.y) xs.push(a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y)); }
+  return xs.length >= 2 ? [Math.min(...xs), Math.max(...xs)] : null;
+}
+
+// ---------- leg & boot items
+// Over shoes, the foot is bigger: add the shoe's bulk and sole to the foot measurements.
+function legFootFor(m, o) {
+  const m2 = Object.assign({}, m);
+  if (o.legOver === 'over shoes') {
+    const sole = 0.15 + m.footLength * 0.03;
+    m2.footLength = m.footLength * 1.05 + 0.25;
+    m2.footCirc = m.footCirc * 1.12 + 0.5;
+    m2.instepCirc = m.instepCirc * 1.12 + 0.5;
+    m2.ankleCirc = m.ankleCirc * 1.05 + 0.2;
+    m2.ankleHeight = m.ankleHeight + sole;
+  }
+  m2.heelDiag = Math.max(m2.instepCirc * 1.12, m2.ankleCirc * 1.25);
+  return m2;
+}
+function legRed(o) { return { woven: -0.06, stretch: 0.05, 'faux leather': -0.04 }[o.legFabric] ?? -0.06; }
+function legLenZ(m, L, o, key) {
+  const v = o[key];
+  return {
+    ankle: L.aH * 2.1, 'ankle boot': L.aH + L.kA * 0.22, 'mid-calf': L.aH + L.kA * 0.55, 'knee-high': L.zK - L.kA * 0.05,
+    'over-the-knee': L.zK + m.crotchToKnee * 0.3, 'thigh-high': L.zK + m.crotchToKnee * 0.65, knee: L.zK - L.kA * 0.05
+  }[v] ?? (L.aH + L.kA * 0.55);
+}
+// the boot-cover / spat layer: the sock profile with an open sole
+function legCoverLayer(m, o, L, zTop) {
+  const red = legRed(o), redFoot = red * 0.6;
+  const FLp = m.footLength * (1 - redFoot * 0.25);
+  const hb = L.aH * 0.42, ub = FLp - hb;
+  const depth = (u) => hoseFootGirth(m, u + hb) * (1 - redFoot) / 2;
+  const target = hoseInstepTarget(m, 1, m.footCirc / Math.PI * 0.3);
+  const stretch = o.legFabric === 'stretch';
+  return hoseLayer(m, L, { zTop, lenK: 1, redLeg: red, redFoot, wAnkleMin: stretch ? m.heelDiag / 1.4 / 2 : 0, Lb: ub, uBall: 0.72 * FLp - hb, depth, toe: 'round', target });
+}
+
+function buildLeg(m0, o, S, out) {
+  const P = [];
+  out.plan.family = 'leg';
+  out.used = ['footLength', 'footCirc', 'instepCirc', 'ankleHeight', 'heelLift', 'ankleCirc', 'calfCirc', 'kneeCirc', 'thighCirc', 'waistToKnee', 'waistToAnkle', 'crotchToKnee'];
+  const it = o.item, k = m0.k;
+  const add = (q, d) => out.steps.push({ quick: q, detail: d });
+  const m = legFootFor(m0, o);
+  const L = hoseLevels(m);
+  const stretch = o.legFabric === 'stretch', raw = o.legFabric === 'faux leather';
+  const ew = Math.max(0.25, k * 0.35);
+  add('Cut the pieces.', 'Cut every layer as a mirrored pair (one for each leg)' + (stretch ? ', with the greatest stretch going round the leg' : '') + '. ' + (raw ? 'Faux leather and felt need no hems: trim the edges cleanly.' : 'Transfer the notches: single = instep corner, double = heel.') + (o.legOver === 'over shoes' ? ' The pattern is sized to go over the doll\'s shoes.' : ''));
+  if (it === 'bootcovers' || it === 'spats') {
+    const zTop = legLenZ(m, L, o, it === 'spats' ? 'spatLen' : 'bootLen');
+    const ly = legCoverLayer(m, o, L, zTop);
+    let ol = ly.ol;
+    const ub = m.footLength * (1 - legRed(o) * 0.15) - L.aH * 0.42;
+    if (it === 'spats') {
+      // spats stop across the instep: cut the foot off in front of the instep corner
+      const uc = ub * 0.5;
+      const a = ly.best.T(G.P(uc, -5)), b = ly.best.T(G.P(uc, 8));
+      const c = hoseClip(ol.pts, ol.tags, a, b, ly.heelPt, 'vamp');
+      if (c) ol = c;
+    }
+    const name = it === 'spats' ? (o.spatLen === 'ankle' ? 'Spat' : 'Gaiter') : 'Boot cover';
+    const pc = pieceFromOutline(ol, { name, cut: { fabric: 4, mirrored: true, lining: o.legLined && !raw ? 4 : 0, note: 'two layers per leg (inner + outer side) — 2 mirrored pairs' } });
+    pc.edges.top = raw ? { kind: 'none', label: 'raw edge' } : o.legLined ? { kind: 'seam' } : { kind: 'hem', sa: 0.6, label: 'hem' };
+    pc.edges.sole = raw ? { kind: 'none', label: 'raw edge' } : { kind: 'hem', sa: ew + 0.3, label: 'elastic casing — under the shoe edge' };
+    pc.edges.vamp = raw ? { kind: 'none', label: 'raw edge' } : o.legLined ? { kind: 'seam' } : { kind: 'hem', sa: 0.5, label: 'hem' };
+    pc.edges.seam = { kind: 'seam' };
+    const bb = G.bbox(pc.pts);
+    const yg = bb.y0 + Math.min(0.5, bb.h * 0.1), sp = hoseSpan(pc.pts, yg) || [bb.x0, bb.x1];
+    pc.grain = { a: G.P(sp[0] + (sp[1] - sp[0]) * 0.35, yg + 0.1), b: G.P(sp[0] + (sp[1] - sp[0]) * 0.35, Math.max(yg + 0.6, ly.yA - 0.2)) };
+    if (stretch) pc.stretch = { a: G.P(sp[0] + (sp[1] - sp[0]) * 0.2, yg + 0.8), b: G.P(sp[0] + (sp[1] - sp[0]) * 0.8, yg + 0.8) };
+    pc.marks.push({ type: 'notch', p: ly.heelPt, n: 2 });
+    if (it === 'bootcovers') pc.marks.push({ type: 'notch', p: ly.best.J, n: 1 });
+    // opening down the back seam (woven covers must open to get over the heel)
+    const close = it === 'spats' ? o.spatClose : o.bootClose;
+    const opening = close && close !== 'none';
+    let openLen = 0;
+    if (opening) {
+      const yEnd = ly.yA + L.aH * 0.15;
+      openLen = yEnd - bb.y0;
+      const spE = hoseSpan(pc.pts, yEnd);
+      if (spE) pc.marks.push({ type: 'dot', kind: 'dot', p: G.P(spE[0] + 0.05, yEnd), label: 'opening ends' });
+      const nF = Math.max(2, Math.round(openLen / Math.max(0.8, k * 2.2)));
+      if (close === 'buttons' || close === 'snaps') addNotion(out, close === 'buttons' ? 'button' : 'snap', close === 'buttons' ? 'tiny buttons' : 'small snaps', nF * 2);
+      if (close === 'zip') addNotion(out, 'zip', 'doll zip', 2, cm(Math.ceil(openLen)));
+      if (close === 'hook & loop') addNotion(out, 'velcro', 'thin sew-on hook & loop', 2, cm(Math.ceil(openLen)));
+      if (close === 'lacing') { addNotion(out, 'eyelet', 'mini eyelets', nF * 4); addNotion(out, 'lace', 'narrow cord / ribbon for the lacing', 2, cm(Math.ceil(openLen * 3 + 6))); }
+    } else if (!stretch) out.warnings.push('Without an opening, a ' + o.legFabric + ' cover won\'t get over the heel — choose a closure, or a stretch fabric.');
+    if (!opening && stretch && ly.wA * 2 * 1.4 < m.heelDiag) out.warnings.push('The ankle is snug for the heel — add a closure down the back.');
+    P.push(pc);
+    // under-foot strap / stirrup
+    const strapL = m.instepCirc * 0.5 + (raw ? 0.6 : 0.4), sw = Math.max(0.4, k * 0.7);
+    const st = strip(strapL, raw ? sw : sw * 2, { name: it === 'spats' ? 'Instep strap' : 'Stirrup strap', cut: { fabric: 2, note: raw ? 'single layer' : 'folded lengthwise' } });
+    if (!raw) st.marks.push({ type: 'fold', a: G.P(0, sw), b: G.P(strapL, sw), label: 'fold' });
+    P.push(st);
+    if (it === 'spats') { addNotion(out, 'button', 'buttons for the instep strap', 2); }
+    if (!raw && it === 'bootcovers') addNotion(out, 'elastic', 'narrow elastic for the sole edge', 2, cm(Math.ceil(edgeLength(pc, 'sole') * 2 * 0.8)) + ' each');
+    // top finish
+    if (o.bootTop === 'fold-down cuff' || o.bootTop === 'faux-fur trim') {
+      const g = hoseCircAt(m, L, zTop) * (1 - legRed(o)) + 0.4, h = Math.max(0.6, L.kA * (o.bootTop === 'faux-fur trim' ? 0.12 : 0.16));
+      const band = strip(g, h * 2, { name: o.bootTop === 'faux-fur trim' ? 'Faux-fur trim' : 'Fold-down cuff', cut: o.bootTop === 'faux-fur trim' ? { fabric: 0, contrast: 2, note: 'faux fur, one per leg; split at the opening' } : { fabric: 2, note: 'folded lengthwise; one per leg' } });
+      band.marks.push({ type: 'fold', a: G.P(0, h), b: G.P(g, h), label: 'fold' });
+      P.push(band);
+      pc.edges.top = { kind: 'seam', label: 'joins the ' + (o.bootTop === 'faux-fur trim' ? 'trim' : 'cuff') };
+    }
+    // steps
+    add('Sew the layers together.', 'Place an inner and an outer layer right sides together (notches matching). Stitch the front seam from the top, over the instep and round the toe to the sole edge; stitch the back seam from the heel up' + (opening ? ' to the "opening ends" dot' : ' to the top') + '.' + (it === 'spats' ? ' The spat stops across the instep — that edge is hemmed.' : ''));
+    if (o.legLined && !raw) add('Line it.', 'Make the lining the same way, slip it inside right sides together, stitch round the top' + (it === 'spats' ? ' and the instep edge' : '') + (opening ? ' and the opening edges' : '') + ', turn through the sole opening and press.');
+    if (opening) add('Make the closure.', { zip: 'Sew the zip into the back opening (finish the edges first).', 'hook & loop': 'Sew hook & loop strips to the two back edges so they overlap.', lacing: 'Fold the back edges under, set the mini eyelets in pairs down each side and lace with cord or ribbon.', buttons: 'Hem the back edges, add a small overlap tab on one side, and sew the buttons and buttonholes (or loops).', snaps: 'Hem the back edges with a small overlap and sew on the snaps.' }[close] || 'Add the closure down the back.');
+    if (it === 'bootcovers' && !raw) add('Elastic at the sole edge.', 'Turn the sole edge up into a casing and thread the elastic; pull it so the edge tucks under the shoe sole, and stitch the ends.');
+    add(it === 'spats' ? 'Add the instep strap.' : 'Add the stirrup strap.', 'Fold and stitch the strap; sew one end inside the ' + (it === 'spats' ? 'inner side at the instep and button the other end on the outer side' : 'sole edge on each side, so it runs under the arch in front of the heel') + '.');
+    if (o.bootTop === 'fold-down cuff' || o.bootTop === 'faux-fur trim') add('Add the ' + (o.bootTop === 'faux-fur trim' ? 'fur trim.' : 'cuff.'), 'Fold the band lengthwise and sew it round the top edge right sides together' + (opening ? ', ending at the opening' : '') + '; ' + (o.bootTop === 'fold-down cuff' ? 'wear it folded down.' : 'brush the pile out of the seam.'));
+    else if (!raw && !o.legLined) add('Hem the top.', 'Turn the top under twice and stitch.');
+    out.plan.leg = { type: 'cover', it, zTop, L, openLen, opening, close, phi: ly.best.phi };
+    out.readout.size = (it === 'spats' ? name.toLowerCase() : 'cover') + ' ' + cm(zTop) + ' up from the floor';
+  } else if (it === 'bootcuffs' || it === 'anklecuffs') {
+    const z = it === 'anklecuffs' ? L.aH * 1.15 : legLenZ(m, L, o, 'cuffPos');
+    const over = it === 'bootcuffs' ? (o.legOver === 'over shoes' ? 0.14 : 0.08) : 0.05;
+    const girth = hoseCircAt(m, L, z) * (1 + over) + (stretch ? -hoseCircAt(m, L, z) * 0.08 : 0.4);
+    const h = +o.cuffBandH > 0 ? +o.cuffBandH : Math.max(0.6, L.kA * (it === 'bootcuffs' ? 0.2 : 0.1));
+    const cs = it === 'bootcuffs' ? o.bootCuffStyle : o.ankleCuffStyle;
+    const close = it === 'anklecuffs' ? o.ankleClose : 'none';
+    const pull = it === 'bootcuffs' || close === 'elastic';
+    const passNeed = it === 'anklecuffs' ? m.heelDiag : 0;
+    let bandL = girth + (pull ? 0 : Math.max(0.5, k * 0.9));
+    if (it === 'anklecuffs' && close === 'elastic') bandL = Math.max(girth * 1.3, passNeed / 1.6 * 1.05);
+    const fold = cs === 'fold-over' || cs === 'cable knit' || it === 'anklecuffs';
+    const band = strip(bandL, h * (fold ? 2 : 1) + (raw ? 0 : 0), { name: it === 'bootcuffs' ? 'Boot cuff' : 'Ankle cuff', cut: cs === 'faux fur' ? { fabric: 0, contrast: 2, note: 'faux fur, one per leg' } : { fabric: 2, note: fold ? 'folded lengthwise; ends joined into a loop' : 'one per leg' } });
+    if (fold) band.marks.push({ type: 'fold', a: G.P(0, h), b: G.P(bandL, h), label: 'fold' });
+    if (stretch || cs === 'cable knit') band.stretch = { a: G.P(bandL * 0.3, h * 0.5), b: G.P(bandL * 0.7, h * 0.5) };
+    P.push(band);
+    if (cs === 'ruffle' || cs === 'double ruffle' || cs === 'lace ruffle') {
+      [0, cs === 'double ruffle' ? 1 : -1].filter(i => i >= 0).forEach(i => {
+        const rh = h * (i ? 0.7 : 1), rl = bandL * 1.9;
+        const r = strip(rl, rh + 0.5, { name: i ? 'Second ruffle' : 'Ruffle', cut: { fabric: 2, note: 'narrow-hem one long edge, gather the other to the cuff' } }, { top: 'seam', right: 'seam', bottom: 'hem', left: 'seam' });
+        r.edges.hem = { kind: 'hem', sa: 0.3, label: 'narrow hem' };
+        r.marks.push({ type: 'gather', pts: [G.P(0.2, 0.05), G.P(rl - 0.2, 0.05)], label: '' });
+        P.push(r);
+      });
+    }
+    if (cs === 'lace ruffle' || cs === 'lace') addNotion(out, 'lace', 'lace edging', 2, cm(Math.ceil(bandL * (cs === 'lace' ? 1.1 : 1.9))) + ' each');
+    if (it === 'anklecuffs' && o.ankleBow) addNotion(out, 'ribbon', 'ribbon for the bows', 2, cm(Math.ceil(girth * 1.2)) + ' each');
+    if (close === 'snap') addNotion(out, 'snap', 'snaps', 2);
+    if (close === 'ribbon tie') addNotion(out, 'ribbon', 'narrow ribbon for the ties', 2, cm(Math.ceil(girth * 1.2)) + ' each');
+    if (close === 'elastic') addNotion(out, 'elastic', 'narrow elastic', 2, cm(Math.ceil(girth + 0.6)) + ' each');
+    if (it === 'bootcuffs' && !stretch && cs !== 'cable knit') out.notes.push('Boot cuffs in a woven fabric are cut ' + cm(bandL) + ' round so they slip over the boot top; a knit (sweater-knit, rib) hugs it better.');
+    if (cs === 'cable knit') out.notes.push('Cable-knit look: cut the cuffs from an old sweater sleeve or cuff (put the ribbed edge at the fold), or from cable-knit jersey.');
+    add('Make the cuff.', fold ? 'Join the short ends into a loop' + (pull ? '' : ' (leave them open for the closure)') + ', fold it in half lengthwise wrong sides together and baste the raw edges.' : 'Join the short ends into a loop.');
+    if (cs === 'ruffle' || cs === 'double ruffle' || cs === 'lace ruffle') add('Add the ruffle' + (cs === 'double ruffle' ? 's' : '') + '.', 'Narrow-hem the ruffle' + (cs === 'lace ruffle' ? ' with the lace under it' : '') + ', gather it and sew it under the folded edge (stacked if two).');
+    if (it === 'bootcuffs') add('Put them on.', 'Slip the cuff over the boot top so it sits just over the edge, fold side up' + (cs === 'fold-over' ? ', and fold it down over the boot.' : '.'));
+    else add('Add the closure.', close === 'elastic' ? 'Thread elastic through the folded band before closing the loop.' : close === 'ribbon tie' ? 'Sew a ribbon to each end and tie it at the outer ankle.' : 'Overlap the ends and sew on the snap.' + (o.ankleBow ? ' Sew a small ribbon bow at the outer side.' : ''));
+    out.plan.leg = { type: 'cuff', it, z, girth, h, cs, L };
+    out.readout.size = 'cuff ' + cm(girth) + ' round, ' + cm(h) + ' high';
+  }
+  out.pieces.push(...P);
+  out.flat = Object.assign({ kind: 'leg', item: it }, out.plan.leg || {});
+}
+
+function legFlat(out, F) {
+  const m = legFootFor(out.m, out.o), o = out.o, L = F.L;
+  const zMax = F.type === 'cover' ? Math.max(F.zTop, L.aH * 2) * 1.12 : Math.max(F.z + F.h, L.aH * 2.5) * 1.3;
+  const legW = (z) => hoseCircAt(m, L, z) / Math.PI;
+  const yOf = (z) => zMax - z;
+  const zs = []; for (let i = 0; i <= 16; i++) zs.push(L.aH + (zMax - L.aH) * i / 16);
+  // a stylised leg + foot in side view, the item drawn over it
+  const FL = m.footLength, dA = m.ankleCirc / Math.PI, hL = m.heelLift || 0;
+  const foot = G.spline([G.P(dA * 0.45, yOf(L.aH)), G.P(FL * 0.35, yOf(m.instepCirc / Math.PI * 0.85 + hL * 0.4)), G.P(FL * 0.8, yOf(m.footCirc / Math.PI * 0.5)), G.P(FL * 0.92, yOf(m.footCirc / Math.PI * 0.2)), G.P(FL * 0.8, yOf(0)), G.P(FL * 0.2, yOf(hL * 0.2)), G.P(-dA * 0.6, yOf(hL + L.aH * 0.15)), G.P(-dA * 0.55, yOf(L.aH * 0.8 + hL)), G.P(-dA * 0.45, yOf(L.aH))], 6);
+  const backE = zs.map(z => G.P(-legW(z) * 0.45, yOf(z))), frontE = zs.map(z => G.P(legW(z) * 0.55, yOf(z)));
+  const side = [ln(backE, 'flatd'), ln(frontE, 'flatd'), ln(foot, 'flatd')];
+  const front = [ln(zs.map(z => G.P(-legW(z) / 2, yOf(z))), 'flatd'), ln(zs.map(z => G.P(legW(z) / 2, yOf(z))), 'flatd')];
+  if (F.type === 'cover') {
+    const zt = F.zTop, sel = zs.filter(z => z <= zt).concat([zt]).sort((a, b) => a - b);
+    const bE = sel.map(z => G.P(-legW(z) * 0.5, yOf(z))).reverse(), fE = sel.map(z => G.P(legW(z) * 0.6, yOf(z)));
+    const toeEnd = F.it === 'spats' ? FL * 0.5 : FL * 0.95;
+    const footTop = G.spline([G.P(legW(L.aH) * 0.6, yOf(L.aH)), G.P(FL * 0.38, yOf(m.instepCirc / Math.PI * 0.9 + hL * 0.4)), G.P(toeEnd, yOf(F.it === 'spats' ? m.footCirc / Math.PI * 0.7 : m.footCirc / Math.PI * 0.25))], 6);
+    const shape = bE.concat([G.P(-dA * 0.65, yOf(hL + L.aH * 0.1)), G.P(-dA * 0.2, yOf(hL * 0.4 + 0.1))]).concat([G.P(toeEnd * (F.it === 'spats' ? 0.85 : 0.95), yOf(0.12))]).concat(footTop.slice().reverse()).concat(fE);
+    side.push(fl(shape));
+    side.push(ln([G.P(-dA * 0.1, yOf(0.05)), G.P(FL * 0.45, yOf(0.05))], 'flatl'));        // strap under the foot
+    if (F.opening) side.push(ln([G.P(-legW(zt) * 0.5, yOf(zt)), G.P(-legW(L.aH) * 0.5, yOf(L.aH + L.aH * 0.15))], o.spatClose === 'buttons' || o.bootClose === 'buttons' ? 'flatd' : 'flatl'));
+    if (F.it === 'spats' && (o.spatClose === 'buttons')) for (let i = 0; i < 4; i++) { const z = L.aH * 1.1 + (zt - L.aH * 1.1) * (i + 0.5) / 4; side.push({ c: G.P(-legW(z) * 0.5 + 0.15, yOf(z)), r: Math.max(0.08, dA * 0.05), cls: 'flat' }); }
+    const fw = m.footWidth / 2, wt = legW(zt) / 2;
+    front.push(fl([G.P(-wt, yOf(zt))].concat(sel.map(z => G.P(-legW(z) / 2 * 1.05, yOf(z))).reverse(), [G.P(-fw * 1.05, yOf(0.2)), G.P(fw * 1.05, yOf(0.2))], sel.map(z => G.P(legW(z) / 2 * 1.05, yOf(z))), [G.P(wt, yOf(zt))])));
+    if (o.bootTop === 'fold-down cuff' || o.bootTop === 'faux-fur trim') { const h = Math.max(0.6, L.kA * 0.14); front.push(fl([G.P(-wt * 1.1, yOf(zt)), G.P(wt * 1.1, yOf(zt)), G.P(wt * 1.1, yOf(zt) + h), G.P(-wt * 1.1, yOf(zt) + h)])); }
+  } else {
+    const z = F.z, w = legW(z) / 2 * 1.08, y0 = yOf(z + F.h * 0.5), y1 = yOf(z - F.h * 0.5);
+    front.push(fl([G.P(-w, y0), G.P(w, y0), G.P(w, y1), G.P(-w, y1)]));
+    if (F.cs === 'fold-over' || F.cs === 'cable knit') front.push(ln([G.P(-w, (y0 + y1) / 2), G.P(w, (y0 + y1) / 2)], 'flatl'));
+    if (F.cs === 'cable knit') for (let i = 1; i < 4; i++) front.push(ln([G.P(-w + w * 2 * i / 4, y0), G.P(-w + w * 2 * i / 4, y1)], 'flatd'));
+    if (F.cs === 'faux fur') { const p = []; for (let i = 0; i <= 12; i++) p.push(G.P(-w * 1.05 + w * 2.1 * i / 12, y1 + (i % 2 ? 0.2 : 0))); front.push(ln(p, 'flat')); }
+    if (F.cs && F.cs.includes('ruffle')) {
+      const frill = (y, dir, rh) => { const p = [], a = -w * 1.35, b = w * 1.35; for (let i = 0; i <= 12; i++) p.push(G.P(a + (b - a) * i / 12, y + dir * (rh - (i % 2 ? rh * 0.2 : 0)))); front.push(ln([G.P(-w, y)].concat(p, [G.P(w, y)]), 'flat')); };
+      frill(y1, 1, F.h * 0.8);
+      if (F.cs === 'double ruffle') frill(y0, -1, F.h * 0.55);
+    }
+    if (F.it === 'anklecuffs' && o.ankleBow) { const c = G.P(w * 0.9, (y0 + y1) / 2), s = F.h * 0.45; front.push(fl([c, G.P(c.x - s, c.y - s * 0.6), G.P(c.x - s, c.y + s * 0.6)]), fl([c, G.P(c.x + s, c.y - s * 0.6), G.P(c.x + s, c.y + s * 0.6)])); }
+    side.push(fl([G.P(-legW(z) * 0.5, y0), G.P(legW(z) * 0.62, y0), G.P(legW(z) * 0.62, y1), G.P(-legW(z) * 0.5, y1)]));
+  }
+  return [{ label: 'SIDE', items: side }, { label: 'FRONT', items: front }];
+}
+
+;
 // ===================== FLAT SHOES (beta) =====================
 // Drafted from the doll's foot: length, width, ball and instep girth, ankle height. The sole is a
 // foot-shaped outline; the upper is a heel counter (quarter) plus a toe piece (vamp) whose edges
@@ -4493,6 +5301,8 @@ function drawFlats(out) {
     if (F.kind === 'belt' || F.kind === 'styling' && o.item !== 'sash') return flatSVG(bodyFlat(out, F));
     if (F.kind === 'neck' || F.kind === 'hair' || F.kind === 'styling') return flatSVG(smallFlat(out, F));
     if (F.kind === 'collar') return flatSVG(collarFlat(out, F));
+    if (F.kind === 'apron') return flatSVG(apronFlat(out, F));
+    if (F.kind === 'leg') return flatSVG(legFlat(out, F));
   } catch (e) { if (typeof console !== 'undefined') console.error(e); }
   return '';
 }
@@ -4771,7 +5581,7 @@ function settingsFrom(o) {
   const hemSa = o.hemSa === 'custom' ? (+o.hemSaCm || 0) : +o.hemSa;
   return { useSA: sa > 0, sa, hemSa: sa > 0 ? hemSa : 0, paper: o.paper || 'A4', packPages: o.packPages !== false, brand: 'DOLLHEIMR' };
 }
-const BUILDERS = { bag: () => buildBag, hat: () => buildHat, belt: () => buildBeltFamily, neck: () => buildNeck, hair: () => buildHair, styling: () => buildStyling, shoe: () => buildShoe, collar: () => buildCollar };
+const BUILDERS = { bag: () => buildBag, hat: () => buildHat, belt: () => buildBeltFamily, neck: () => buildNeck, hair: () => buildHair, styling: () => buildStyling, shoe: () => buildShoe, collar: () => buildCollar, apron: () => buildApron, leg: () => buildLeg };
 function buildAccessory(doll, raw) {
   const o = normalizeOptions(raw);
   const { m, est } = resolveAcc(doll);
@@ -4814,19 +5624,13 @@ function sget(k, fb) { try { const r = localStorage.getItem(PREFIX + k); return 
 function sset(k, v) { try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); return true; } catch (e) { toast('Could not save — browser storage is full or blocked.'); return false; } }
 const DB = { dolls: [], saved: [], collections: [], settings: {} };
 function loadDB() { DB.dolls = sget('dolls', []); DB.saved = sget('saved', []); DB.collections = sget('collections', []); DB.settings = sget('settings', {}); }
-function saveDB(k) { const ok = sset(k, DB[k]); if (ok) { sset('lastChange', Date.now()); backupStatus(); } return ok; }
+function saveDB(k) { syncTrack(k); const ok = sset(k, DB[k]); if (ok) { sset('lastChange', Date.now()); backupStatus(); } return ok; }
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const uid = (p) => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const h = esc;
 let toastTimer = null;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
-function download(name, blob) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-}
 const safeName = (s) => String(s || 'pattern').replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').slice(0, 60);
 function dollById(id) { return DB.dolls.find(d => d.id === id); }
 function gLabel(g) { return itemLabel(g); }
@@ -5232,8 +6036,6 @@ function addPngDpi(png, dpi) {
 // ---- print / PDF ----
 function printPattern(ctx) {
   const r = ctx.res, o = r.o;
-  const w = window.open('', '_blank');
-  if (!w) { toast('Allow pop-ups to print, or download the SVG instead.'); return; }
   const mode = ctx.instrMode || 'quick';
   const saved = ctx.savedId ? DB.saved.find(s => s.id === ctx.savedId) : null;
   const edits = (saved && saved.instrEdits) || ctx.instrEdits || {};
@@ -5255,7 +6057,7 @@ function printPattern(ctx) {
   <p style="font-size:8pt;color:#6b6152">Print the pattern pages at 100% ("actual size", no scaling) and check the 5 × 5 cm test square.</p></div>
   ${ctx.pagesSVG.map(s => `<div class="pg">${s}</div>`).join('')}
   <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script></body></html>`;
-  w.document.open(); w.document.write(html); w.document.close();
+  printHTML(html, ctx.title);
 }
 
 // ===================== SAVE =====================
@@ -5486,9 +6288,11 @@ function doGrade() {
 // ===================== BACKUP / RESTORE / IMPORT DOLLS =====================
 function backupAll() {
   const payload = { app: 'doll-acc-studio', version: 1, exportedAt: new Date().toISOString(), dolls: DB.dolls, saved: DB.saved, collections: DB.collections, settings: DB.settings, lastOptions: sget('lastOptions', null) };
-  download('doll-accessories-backup-' + new Date().toISOString().slice(0, 10) + '.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-  sset('lastBackup', Date.now()); backupStatus();
-  toast(DB.dolls.length || DB.saved.length ? 'Backup downloaded.' : 'Backup downloaded — but the app is empty, so it contains no dolls or patterns.');
+  download('doll-accessories-backup-' + new Date().toISOString().slice(0, 10) + '.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })).then(ok => {
+    if (!ok) return;
+    sset('lastBackup', Date.now()); backupStatus();
+    toast(DB.dolls.length || DB.saved.length ? 'Backup downloaded.' : 'Backup downloaded — but the app is empty, so it contains no dolls or patterns.');
+  });
 }
 // Dolls from a Doll sew, Doll knit (or another Doll accessories) backup: same measurement keys.
 // Existing dolls (same id or name) are updated; measurements only stored here are kept.
@@ -5585,7 +6389,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePageV
 // ===================== INIT =====================
 function init() {
   loadDB();
-  backupStatus(); askPersistentStorage();
+  backupStatus(); askPersistentStorage(); initNativeShell(); initSync();
   $$('.tab').forEach(t => t.onclick = () => showTab(t.dataset.tab));
   $('#btnBackup').onclick = backupAll;
   $('#btnRestore').onclick = () => $('#restoreFileInput').click();
@@ -5599,9 +6403,354 @@ function init() {
 }
 document.addEventListener('DOMContentLoaded', init);
 
+;
+// ===================== PLATFORM (browser PWA or Android APK) =====================
+// Shared word-for-word by Doll sew and Doll accessories (src/platform.js); keep the two in step.
+// In the APK there is no download bar and no print dialog in the web view, so files go through
+// Android's share sheet (Files, Drive, email…) and printing goes through Android's own print service
+// (the HtmlPrint plugin added by scripts/patch-android.mjs), which also offers "Save as PDF".
+const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const capPlugin = (name) => (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[name]) || (window.Capacitor && window.Capacitor.registerPlugin && window.Capacitor.registerPlugin(name));
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+// Written in ~1.5 MB pieces (a multiple of 3 bytes, so each piece is valid base64 on its own):
+// one giant write is what fails for big backups in an Android app.
+async function writeNativeFile(path, blob, directory) {
+  const Filesystem = capPlugin('Filesystem'), CHUNK = 3 * 512 * 1024;
+  if (!blob.size) await Filesystem.writeFile({ path, data: '', directory, recursive: true });
+  for (let off = 0; off < blob.size; off += CHUNK) {
+    const data = await blobToBase64(blob.slice(off, off + CHUNK));
+    if (off === 0) await Filesystem.writeFile({ path, data, directory, recursive: true });
+    else await Filesystem.appendFile({ path, data, directory });
+  }
+  return (await Filesystem.getUri({ path, directory })).uri;
+}
+// Browser: a normal download. APK: the share sheet. Resolves false if the share was cancelled.
+async function download(name, blob) {
+  if (!IS_NATIVE) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return true;
+  }
+  try {
+    const uri = await writeNativeFile(name, blob, 'CACHE');
+    await capPlugin('Share').share({ title: name, url: uri, dialogTitle: name });
+    return true;
+  } catch (e) {
+    if (/cancel/i.test(String(e && e.message || e))) return false;
+    toast('Could not save the file: ' + (e && e.message || e));
+    return false;
+  }
+}
+// html is a complete page; in the browser it opens in a new tab and prints itself.
+async function printHTML(html, name) {
+  if (IS_NATIVE) {
+    try { await capPlugin('HtmlPrint').print({ html: html.replace(/<script>window\.onload[\s\S]*?<\/script>/, ''), name: name || 'Pattern' }); }
+    catch (e) { toast('Printing is not available: ' + (e && e.message || e)); }
+    return;
+  }
+  const w = window.open('', '_blank');
+  if (!w) { toast('Allow pop-ups to print, or download the SVG instead.'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+// Android back button: close the page viewer / go back a step, and only leave the app from the start.
+function initNativeShell() {
+  if (!IS_NATIVE) return;
+  document.documentElement.classList.add('native');
+  const App = capPlugin('App');
+  if (App && App.addListener) App.addListener('backButton', (ev) => {
+    if (document.getElementById('pageViewer')) { closePageViewer(); return; }
+    const sheet = document.querySelector('.sync-sheet');
+    if (sheet) { sheet.remove(); return; }
+    if (ev && ev.canGoBack) history.back(); else App.minimizeApp ? App.minimizeApp() : App.exitApp();
+  });
+}
+
+;
+// ===================== SYNC BETWEEN DEVICES =====================
+// Shared word-for-word by Doll sew and Doll accessories (src/sync.js); keep the two in step.
+// Same design as Doll Ledger and Dollheimr Social: the Supabase project already set up for Dollheimr
+// Studio (same URL, key, email and password), with this app's own table, so it never touches the
+// other apps' data. saveDB() dates every record that changed (_ts) and queues it; the queue goes up a
+// few seconds later. Other devices' changes come down on open, every 30 s while the app is visible,
+// and after each upload. Newest edit wins.
+const SYNC_TABLE = PREFIX.startsWith('doll-sew') ? 'sew_records' : 'acc_records';
+const SYNC_APP = PREFIX.startsWith('doll-sew') ? 'Doll sew' : 'Doll accessories';
+const SYNC_COLS = ['dolls', 'saved', 'collections'];
+const SY = { cfg: sget('sync', null), outbox: sget('outbox', {}), busy: false, state: 'off', error: '', lastOk: sget('syncLastOk', null), touched: new Set(), snap: {}, uiDirty: new Set() };
+const syncOn = () => !!(SY.cfg && SY.cfg.url && SY.cfg.key && SY.cfg.session);
+const saveSy = () => sset('sync', SY.cfg), saveOutbox = () => sset('outbox', SY.outbox);
+const nowIso = () => new Date().toISOString();
+const verOf = (r) => (r && r._ts) || '';
+const noTs = (r) => JSON.stringify(Object.assign({}, r, { _ts: undefined }));
+const recOf = (c, id) => c === 'settings' ? DB.settings : (DB[c] || []).find(x => String(x.id) === id);
+
+// What each record looked like at the last save, so saveDB() can tell what changed.
+function syncSnapAll() {
+  SYNC_COLS.forEach(c => { SY.snap[c] = new Map((DB[c] || []).filter(r => r && r.id != null).map(r => [String(r.id), noTs(r)])); });
+  SY.snap.settings = noTs(DB.settings || {});
+}
+let syncTimer;
+function syncQueue(k, del) {
+  if (!SY.cfg) return;
+  SY.outbox[k] = del || '1'; if (SY.busy) SY.touched.add(k);
+}
+// Called by saveDB(k) just before the collection is written to this device's storage.
+function syncTrack(k) {
+  const ts = nowIso(); let n = 0;
+  if (k === 'settings') {
+    const s = noTs(DB.settings || {});
+    if (s !== SY.snap.settings) { SY.snap.settings = s; DB.settings._ts = ts; syncQueue('settings|settings'); n++; }
+  } else if (SYNC_COLS.includes(k)) {
+    const old = SY.snap[k] || new Map(), next = new Map();
+    for (const r of DB[k]) {
+      if (!r) continue;
+      if (r.id == null) r.id = uid(k.slice(0, 3));
+      const id = String(r.id), s = noTs(r);
+      next.set(id, s);
+      if (old.get(id) !== s) { r._ts = ts; syncQueue(k + '|' + id); n++; }
+    }
+    for (const id of old.keys()) if (!next.has(id)) { syncQueue(k + '|' + id, ts); n++; }
+    SY.snap[k] = next;
+  }
+  if (n && SY.cfg) { saveOutbox(); clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 2500); }
+  syncStatus();
+}
+
+// ---- Supabase REST (no library needed)
+const sbUrl = (p) => SY.cfg.url.replace(/\/+$/, '') + p;
+async function sb(path, opts, retried) {
+  opts = opts || {};
+  if (SY.cfg.session.expires_at <= Date.now()) await sbRefresh();
+  const r = await fetch(sbUrl(path), Object.assign({}, opts, { headers: Object.assign({ apikey: SY.cfg.key, Authorization: 'Bearer ' + SY.cfg.session.access_token }, opts.headers || {}) }));
+  if (r.status === 401 && !retried) { await sbRefresh(); return sb(path, opts, true); }
+  if (!r.ok) { let msg = String(r.status); try { const j = await r.json(); msg = j.msg || j.message || j.error_description || j.error || msg; } catch (e) { } const er = new Error(msg); er.status = r.status; throw er; }
+  return r;
+}
+async function sbAuth(kind, body) {
+  const r = await fetch(sbUrl(kind === 'signup' ? '/auth/v1/signup' : '/auth/v1/token?grant_type=' + kind), { method: 'POST', headers: { apikey: SY.cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  let j = {}; try { j = await r.json(); } catch (e) { }
+  if (!r.ok) throw new Error(j.msg || j.error_description || j.message || j.error || ('Sign-in failed (' + r.status + ')'));
+  return j;
+}
+function keepSession(j) { const o = SY.cfg.session || {}; SY.cfg.session = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + ((j.expires_in || 3600) - 60) * 1000, user_id: (j.user && j.user.id) || o.user_id, email: (j.user && j.user.email) || o.email || SY.cfg.email }; saveSy(); }
+async function sbRefresh() {
+  try { keepSession(await sbAuth('refresh_token', { refresh_token: SY.cfg.session.refresh_token })); }
+  catch (e) { SY.cfg.session = null; saveSy(); SY.state = 'error'; SY.error = 'Signed out. Sign in again (☁ Sync).'; throw e; }
+}
+
+async function syncPush() {
+  SY.touched.clear();
+  const keys = Object.keys(SY.outbox);
+  let i = 0;
+  while (i < keys.length) {
+    // batches of up to 200 records or ~1 MB (saved patterns can be large)
+    const chunk = [], rows = []; let bytes = 0;
+    while (i < keys.length && chunk.length < 200 && (bytes < 1000000 || !chunk.length)) {
+      const k = keys[i++], j = k.indexOf('|'), c = k.slice(0, j), id = k.slice(j + 1), r = recOf(c, id), m = SY.outbox[k];
+      const row = r ? { id: c + ':' + id, store: c, rec_id: id, data: r, deleted: false, updated_at: verOf(r) || nowIso() } : { id: c + ':' + id, store: c, rec_id: id, data: null, deleted: true, updated_at: m !== '1' ? m : nowIso() };
+      bytes += JSON.stringify(row).length; chunk.push(k); rows.push(row);
+    }
+    await sb('/rest/v1/' + SYNC_TABLE + '?on_conflict=user_id,id', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows) });
+    chunk.forEach(k => { if (!SY.touched.has(k)) delete SY.outbox[k]; }); saveOutbox();
+  }
+}
+async function syncPull() {
+  let n = 0, since = SY.cfg.lastPull || '1970-01-01T00:00:00Z';
+  const changed = new Set();
+  for (let g = 0; g < 200; g++) {
+    const rows = await (await sb('/rest/v1/' + SYNC_TABLE + '?select=store,rec_id,data,deleted,updated_at,server_ts&server_ts=gt.' + encodeURIComponent(since) + '&order=server_ts.asc&limit=200')).json();
+    if (!rows.length) break;
+    for (const row of rows) {
+      since = row.server_ts; const c = row.store, id = row.rec_id;
+      if (c !== 'settings' && !SYNC_COLS.includes(c)) continue;
+      if (SY.outbox[c + '|' + id]) continue; // a newer change on this device is waiting to go up
+      const local = recOf(c, id);
+      if (row.deleted) {
+        if (c !== 'settings' && local && verOf(local) <= row.updated_at) { DB[c] = DB[c].filter(x => String(x.id) !== id); SY.snap[c].delete(id); changed.add(c); n++; }
+        continue;
+      }
+      if (local && verOf(local) >= row.updated_at) continue;
+      if (c === 'settings') { DB.settings = row.data || {}; SY.snap.settings = noTs(DB.settings); }
+      else { const arr = DB[c], i = arr.findIndex(x => String(x.id) === id); if (i >= 0) arr[i] = row.data; else arr.push(row.data); SY.snap[c].set(id, noTs(row.data)); }
+      changed.add(c); n++;
+    }
+    SY.cfg.lastPull = since; saveSy();
+    if (rows.length < 200) break;
+  }
+  changed.forEach(c => { sset(c, DB[c]); SY.uiDirty.add(c); });
+  if (changed.size) syncRefreshUI();
+  return n;
+}
+// Redraw what changed, but never under the user's fingers: if they are typing, wait until they stop.
+function syncRefreshUI() {
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.closest('.panel')) return;
+  const d = SY.uiDirty; if (!d.size) return;
+  if (d.has('dolls')) { renderDollsPanel(); refreshDollSelects(); }
+  if ((d.has('saved') || d.has('collections')) && $('#panel-saved').classList.contains('active')) renderSaved();
+  d.clear(); backupStatus();
+}
+document.addEventListener('focusout', () => setTimeout(() => { if (SY.uiDirty.size) syncRefreshUI(); }, 300));
+
+async function syncNow(manual) {
+  if (!syncOn() || SY.busy) return;
+  if (!navigator.onLine) { SY.state = 'offline'; syncStatus(); return; }
+  SY.busy = true; SY.state = 'syncing'; syncStatus();
+  try {
+    await syncPush();
+    const n = await syncPull();
+    SY.state = 'ok'; SY.error = ''; SY.lastOk = nowIso(); sset('syncLastOk', SY.lastOk);
+    if (manual) toast(n ? 'Synced: ' + n + ' change' + (n === 1 ? '' : 's') + ' from your other devices' : 'Everything is up to date');
+  } catch (e) {
+    SY.state = navigator.onLine ? 'error' : 'offline';
+    SY.error = e.status === 404 ? SYNC_APP + '\'s table is missing in Supabase. Run the setup script (☁ Sync → Setup script).' : e.status === 401 || e.status === 403 ? 'Supabase refused access. Sign in again.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'Could not reach Supabase. Changes will sync when the connection is back.' : (e.message || String(e));
+    if (manual) toast('Sync failed: ' + SY.error);
+  } finally { SY.busy = false; syncStatus(); }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
+window.addEventListener('online', () => syncNow());
+setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30000);
+
+// ---- status pill + sheet
+function syncStatus() {
+  const el = $('#syncStatus'); if (!el) return;
+  const pend = Object.keys(SY.outbox).length, c = SY.cfg;
+  let txt = 'Sync: off', on = false;
+  if (c && c.url) {
+    if (!c.session) txt = 'Signed out'; else if (SY.state === 'syncing') txt = 'Syncing…'; else if (SY.state === 'error') txt = 'Sync problem';
+    else if (pend) txt = pend + ' to sync'; else if (SY.state === 'offline') txt = 'Offline'; else { txt = 'Synced'; on = true; }
+  }
+  el.innerHTML = '<i class="sync-dot' + (on ? ' on' : c && c.url && (SY.state === 'error' || !c.session) ? ' bad' : '') + '"></i>' + h(txt);
+  const box = $('#syncBox'); if (box) box.innerHTML = syncBoxHTML();
+}
+function syncBoxHTML() {
+  const c = SY.cfg;
+  if (!(c && c.url)) return `<p class="help" style="margin:0 0 10px">Keep your phone, tablet and laptop showing the same dolls, saved patterns and collections. It uses the Supabase project you already set up for Dollheimr Studio: same Project URL, key, email and password.</p>
+    <div class="btn-row"><button class="btn" data-sy="setup">Set up sync</button><button class="btn secondary" data-sy="sql">Setup script</button></div>`;
+  const pend = Object.keys(SY.outbox).length;
+  return `<p class="help" style="margin:0 0 6px">Signed in as <b>${h((c.session && c.session.email) || c.email || '')}</b>${c.session ? '' : ' (signed out)'}. ${({ ok: 'Synced', syncing: 'Syncing…', offline: 'Offline', error: 'Problem' }[SY.state] || 'Waiting')} · ${SY.lastOk ? 'last sync ' + new Date(SY.lastOk).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'not synced yet'}${pend ? ' · ' + pend + ' waiting to upload' : ''}</p>
+    ${SY.error ? `<div class="sy-err">${h(SY.error)}</div>` : ''}
+    <div class="btn-row"><button class="btn" data-sy="now">Sync now</button>${c.session ? '' : '<button class="btn secondary" data-sy="setup">Sign in again</button>'}<button class="btn secondary" data-sy="off">Turn off here</button><button class="btn secondary" data-sy="sql">Setup script</button></div>`;
+}
+function openSyncSheet(inner) {
+  let ov = $('.sync-sheet');
+  if (!ov) {
+    ov = document.createElement('div'); ov.className = 'sync-sheet';
+    ov.onclick = (e) => { if (e.target === ov) ov.remove(); else syncAction(e); };
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div class="sync-card"><div class="sync-head"><h3>☁ Sync between devices</h3><button class="btn small secondary" data-sy="close">Close</button></div>${inner}</div>`;
+}
+const syncHome = () => openSyncSheet(`<div id="syncBox">${syncBoxHTML()}</div>`);
+function syncForm() {
+  const c = SY.cfg || {};
+  openSyncSheet(`<p class="help" style="margin:0 0 8px">Use the same Project URL, key, email and password as in Dollheimr Studio (also on supabase.com → your project → Project Settings → API). Before the first time, run the <a href="#" data-sy="sql">setup script</a> once.</p>
+    <label class="sy-field">Project URL<input id="sy-url" value="${h(c.url || '')}" placeholder="https://abcdefgh.supabase.co" autocomplete="off"></label>
+    <label class="sy-field">Publishable key (anon key)<input id="sy-key" value="${h(c.key || '')}" placeholder="sb_publishable_… or eyJ…" autocomplete="off"></label>
+    <label class="sy-field">Email<input id="sy-email" type="email" value="${h(c.email || '')}" autocomplete="username"></label>
+    <label class="sy-field">Password<input id="sy-pass" type="password" autocomplete="current-password"></label>
+    <p class="help" id="sy-msg" style="margin:6px 0"></p>
+    <div class="btn-row"><button class="btn" data-sy="go">Sign in &amp; sync</button><button class="btn secondary" data-sy="new">Create an account instead</button><button class="btn secondary" data-sy="home">Back</button></div>`);
+}
+function syncSqlSheet() {
+  openSyncSheet(`<p class="help" style="margin:0 0 8px">Once, in the same Supabase project as Dollheimr Studio: supabase.com → your project → SQL Editor → New query, paste this, press Run. It adds ${SYNC_APP}'s own table next to the others and changes nothing in Studio, Ledger or Social.</p>
+    <pre class="sy-sql">${h(SYNC_SQL)}</pre><div class="btn-row"><button class="btn" data-sy="copy">Copy</button><button class="btn secondary" data-sy="home">Back</button></div>`);
+}
+async function syncAction(e) {
+  const b = e.target.closest('[data-sy]'); if (!b) return;
+  e.preventDefault();
+  const a = b.dataset.sy;
+  if (a === 'close') $('.sync-sheet').remove();
+  else if (a === 'home') syncHome();
+  else if (a === 'setup') syncForm();
+  else if (a === 'sql') syncSqlSheet();
+  else if (a === 'copy') { try { await navigator.clipboard.writeText(SYNC_SQL); b.textContent = 'Copied'; } catch (er) { const sel = getSelection(), rg = document.createRange(); rg.selectNodeContents($('.sy-sql')); sel.removeAllRanges(); sel.addRange(rg); b.textContent = 'Selected: copy it'; } }
+  else if (a === 'go' || a === 'new') syncRun(a === 'new');
+  else if (a === 'how') syncAfterConnect(b.dataset.v);
+  else if (a === 'now') syncNow(true);
+  else if (a === 'off') { if (confirm('Stop syncing on this device? Your data stays here and in the cloud; you can sign in again later.')) { await syncNow(); SY.cfg = null; saveSy(); SY.outbox = {}; saveOutbox(); SY.state = 'off'; SY.error = ''; syncStatus(); toast('Sync is off on this device'); } }
+}
+
+const SYNC_SQL = `-- ${SYNC_APP}: sync table. Run once in Supabase → SQL Editor (the same project as Dollheimr Studio).
+-- Safe to run again; it does not touch the other apps' tables or files.
+create table if not exists public.${SYNC_TABLE} (
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  id text not null,
+  store text not null,
+  rec_id text not null,
+  data jsonb,
+  deleted boolean not null default false,
+  updated_at text not null,
+  server_ts timestamptz not null default clock_timestamp(),
+  primary key (user_id, id)
+);
+create index if not exists ${SYNC_TABLE}_pull on public.${SYNC_TABLE} (user_id, server_ts);
+alter table public.${SYNC_TABLE} enable row level security;
+drop policy if exists "own rows" on public.${SYNC_TABLE};
+create policy "own rows" on public.${SYNC_TABLE} for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- newest edit wins, and every accepted change gets a fresh server time for pulling
+create or replace function public.${SYNC_TABLE}_stamp() returns trigger language plpgsql as $$
+begin
+  if tg_op = 'UPDATE' and new.updated_at < old.updated_at then return null; end if;
+  new.server_ts := clock_timestamp();
+  return new;
+end $$;
+drop trigger if exists ${SYNC_TABLE}_stamp on public.${SYNC_TABLE};
+create trigger ${SYNC_TABLE}_stamp before insert or update on public.${SYNC_TABLE}
+  for each row execute function public.${SYNC_TABLE}_stamp();
+`;
+async function syncConnect(url, key, email, password, create) {
+  url = url.trim().replace(/\/+$/, ''); key = key.trim(); email = email.trim();
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(url) && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(url)) throw new Error('The Project URL should look like https://abcdefgh.supabase.co');
+  if (key.length < 20) throw new Error('Paste the full publishable (anon) key.');
+  const prev = SY.cfg; SY.cfg = { url, key, email, session: null, lastPull: null };
+  try {
+    if (create) { const j = await sbAuth('signup', { email, password }); if (!j.access_token) { SY.cfg = prev; return 'confirm'; } keepSession(j); }
+    else keepSession(await sbAuth('password', { email, password }));
+    const remoteHas = (await (await sb('/rest/v1/' + SYNC_TABLE + '?select=id&limit=1&deleted=eq.false')).json()).length > 0;
+    const localHas = DB.dolls.length + DB.saved.length + DB.collections.length > 0;
+    return remoteHas && localHas ? 'choose' : remoteHas ? 'pull' : 'push';
+  } catch (e) { if (!SY.cfg.session) SY.cfg = prev; throw e; }
+  finally { saveSy(); }
+}
+async function syncRun(create) {
+  const msg = $('#sy-msg'); msg.textContent = create ? 'Creating account…' : 'Connecting…';
+  try {
+    const res = await syncConnect($('#sy-url').value, $('#sy-key').value, $('#sy-email').value, $('#sy-pass').value, create);
+    if (res === 'confirm') { msg.textContent = 'Account created. Open the confirmation email from Supabase, then come back and tap Sign in & sync.'; return; }
+    if (res !== 'choose') return syncAfterConnect(res);
+    openSyncSheet(`<p class="help" style="margin:0 0 8px">Your cloud already holds ${SYNC_APP} data, and this device has its own too.</p>
+      <div class="btn-row"><button class="btn" data-sy="how" data-v="pull">Use the cloud copy on this device</button></div><p class="help">Best for a new phone or laptop. This device's dolls and patterns are replaced (download a backup first if unsure).</p>
+      <div class="btn-row"><button class="btn secondary" data-sy="how" data-v="merge">Merge both</button></div><p class="help">Keeps everything from both. If the same item is in both, the most recent edit wins.</p>`);
+  } catch (e) { msg.textContent = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'Could not reach that address. Check the Project URL and your internet connection.' : e.status === 404 ? 'Signed in, but ' + SYNC_APP + '\'s table is missing. Run the setup script in Supabase first.' : e.message; }
+}
+async function syncAfterConnect(how) {
+  if (how === 'pull') {
+    SYNC_COLS.forEach(c => { DB[c] = []; sset(c, []); }); DB.settings = {}; sset('settings', {});
+    syncSnapAll(); SY.outbox = {}; saveOutbox(); SY.cfg.lastPull = null; saveSy();
+  } else {
+    SYNC_COLS.forEach(c => DB[c].forEach(r => { if (r && r.id != null) SY.outbox[c + '|' + r.id] = '1'; })); SY.outbox['settings|settings'] = '1'; saveOutbox();
+  }
+  SY.uiDirty = new Set(['dolls', 'saved', 'collections']);
+  syncHome(); await syncNow(); syncRefreshUI();
+  toast({ push: 'Sync is on. This device\'s dolls and patterns are now in your cloud', pull: 'Sync is on. Your dolls and patterns were downloaded', merge: 'Merged. All your devices now share the same dolls and patterns' }[how]);
+}
+function initSync() {
+  syncSnapAll();
+  const btn = $('#btnSync'); if (btn) btn.onclick = syncHome;
+  syncStatus(); syncNow();
+}
+
 </script>
 <script>
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 </script>
